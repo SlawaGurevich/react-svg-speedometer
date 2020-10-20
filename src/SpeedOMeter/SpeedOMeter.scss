@@ -1,0 +1,21 @@
+.speedometer {
+  &__canvas {
+    width: 600px;
+    height: 600px;
+    border: 1px solid red;
+  }
+
+  &-component {
+    background-color: #303136;
+    color: white;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    border: 1px solid white;
+
+    &.speedometer-component-light {
+        background-color: white;
+        color: black;
+    }
+  }
+}
