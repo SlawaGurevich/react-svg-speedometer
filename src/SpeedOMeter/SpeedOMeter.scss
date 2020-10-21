@@ -1,8 +1,46 @@
+$color__indicator-ring--dark: #cfe0f4;
+
 .speedometer {
   &__canvas {
-    width: 600px;
-    height: 600px;
+    width: 1000px;
+    height: 850px;
     border: 1px solid red;
+  }
+
+  &__current-speed {
+    font-family: sans-serif;
+    font-size: 14em;
+    letter-spacing: .04em;
+    font-weight: bold;
+  }
+
+  &__unit {
+    font-family: sans-serif;
+    fill: white;
+    font-size: 40px;
+    letter-spacing: 3px;
+    transform: translateY(12%)
+  }
+
+  &__inner-ring {
+    stroke: $color__indicator-ring--dark;
+    stroke-width: 20;
+    cx: 50%;
+    cy: 50%;
+    fill: transparent
+  }
+
+  #ring__speed-indicator {
+    transition: stroke-dashoffset 100ms linear, opacity 500ms ease-in-out, stroke 100ms linear;
+    opacity: 0;
+
+    &-shine {
+      transition: stroke-dashoffset 100ms linear;
+    }
+
+    &.is-active {
+      opacity: 1;
+    }
   }
 
   &-component {

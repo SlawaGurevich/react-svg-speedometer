@@ -44,5 +44,11 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
+  },
+  "dependencies": {
+    "gradient-path": "^2.1.0",
+    "konva": "^7.1.3",
+    "react-konva": "^16.13.0-6",
+    "tinygradient": "^1.1.2"
   }
 }
