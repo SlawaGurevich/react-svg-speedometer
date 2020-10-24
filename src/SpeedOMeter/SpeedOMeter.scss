@@ -1,4 +1,27 @@
 $color__indicator-ring--dark: #cfe0f4;
+$color__gray--default: #414046;
+
+@keyframes slide-in-from-bottom {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
 
 .speedometer {
   &__canvas {
@@ -27,15 +50,72 @@ $color__indicator-ring--dark: #cfe0f4;
     stroke-width: 20;
     cx: 50%;
     cy: 50%;
-    fill: transparent
+    fill: transparent;
   }
 
-  &__gear-label {
-    font-family: sans-serif;
-    font-size: 2.6em;
-    font-weight: 600;
-    fill: #6a6a72;
-    stroke: none;
+  &__current-speed {
+    transform: translateY(20px);
+    opacity: 0;
+    animation: 500ms ease-out 200ms 1 slide-in-from-bottom;
+    animation-fill-mode: forwards;
+  }
+
+  &__unit {
+    opacity: 0;
+    animation: 300ms ease-in-out 600ms 1 fade-in;
+    animation-fill-mode: forwards;
+  }
+
+  &__current-speed,
+  &__unit {
+    transition: fill 300ms ease-in-out;
+  }
+
+  .selected__gear--P {
+    .speedometer__current-speed,
+    .speedometer__unit {
+      transition: fill 300ms ease-in-out;
+      fill: $color__gray--default;
+    }
+  }
+
+  &__gear {
+    &-container {
+      opacity: 1;
+      transition: opacity 300ms ease-in-out;
+
+      &.hidden {
+        opacity: 0;
+      }
+    }
+
+    &-label {
+      font-family: sans-serif;
+      font-size: 2.6em;
+      font-weight: 600;
+      fill: #6a6a72;
+      stroke: none;
+      transition: font-size 300ms ease-in-out, fill 300ms ease-in-out;
+    }
+
+    &-circle {
+      opacity: 0;
+      stroke-width: 10;
+      r: 30;
+      transition: all 300ms ease-in-out;
+    }
+
+    &--selected {
+      .speedometer__gear-circle {
+        r: 50;
+        opacity: 1;
+      }
+
+      .speedometer__gear-label {
+        fill: white;
+        font-size: 3.2em;
+      }
+    }
   }
 
   #ring__speed-indicator {

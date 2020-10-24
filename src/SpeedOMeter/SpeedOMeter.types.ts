@@ -10,4 +10,5 @@ export interface SpeedOMeterState {
   speed: number;
   interval?: NodeJS.Timeout;
   spacePressed: boolean;
+  selectedGear?: string;
 }

@@ -8,11 +8,24 @@ import Konva from 'konva';
 
 import "./SpeedOMeter.scss";
 
+const GearLabel = ({pos, gear, activeColor, active}) => {
+  return(
+    <g className="speedometer__gear-container hidden">
+      <g className={`speedometer__gear hidden ${active ? "speedometer__gear--selected" : "" }`}>
+        <text className="speedometer__gear-label" dominantBaseline="middle" textAnchor="middle" {...pos}>{gear}</text>
+        <circle className="speedometer__gear-circle" transform="translate(0, -3)" cx={pos.x} cy={pos.y} fill="none" r={50} stroke={activeColor}></circle>
+      </g>
+    </g>
+  )
+}
+
 class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   theme: string
   width: number
   height: number
   state: SpeedOMeterState
+
+  colorHighlight: string = "#cdddf6"
 
   parentRef: React.RefObject<SVGSVGElement>
   backgroundRingPathRef: React.RefObject<SVGPathElement>
@@ -24,7 +37,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     speedLimit: 40
   }
 
-  static gears = [
+  gears:Array<string> = [
     "R", "N", "D", "P", "B"
   ]
 
@@ -36,13 +49,14 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     this.speedIndicatorRingPathRef = React.createRef<SVGPathElement>()
     this.speedIndicatorShinePathRef = React.createRef<SVGPathElement>()
 
-    this.handleSpeed = this.handleSpeed.bind(this)
+    this.handleKeypress = this.handleKeypress.bind(this)
 
     this.state = {
       width: 0,
       height: 0,
       speed: 0,
-      spacePressed: false
+      spacePressed: false,
+      selectedGear: "N"
     }
   }
 
@@ -55,15 +69,28 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
 
     window.addEventListener("resize", this.resize)
-    window.addEventListener("keydown", this.handleSpeed)
-    window.addEventListener("keyup", this.handleSpeed)
+    window.addEventListener("keydown", this.handleKeypress)
+    window.addEventListener("keyup", this.handleKeypress)
+
+    this.fadeInGears()
   }
 
-  handleSpeed(evt) {
+  fadeInGears() {
+    let gears = document.querySelectorAll(".speedometer__gear")
+    console.log(gears)
+
+    for( let i = 0; i < gears.length; i++){
+      setTimeout(() => { gears[i].parentElement.classList.remove("hidden") }, 150 * i)
+    }
+  }
+
+  handleKeypress(evt) {
+    console.log(evt)
     if (evt.key == " ") {
       evt.preventDefault()
+      console.log("speed")
 
-      if (evt.type == "keydown" && !this.state.spacePressed) {
+      if (evt.type == "keydown" && !this.state.spacePressed && this.state.selectedGear !== "P") {
         clearInterval(this.state.interval)
         this.setState({
           interval: setInterval(() => {
@@ -73,7 +100,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             })
           }, 100)
         })
-      } else if (evt.type == "keyup") {
+      } else if (evt.type == "keyup" && this.state.spacePressed) {
         clearInterval(this.state.interval)
         this.setState(
           {
@@ -85,10 +112,27 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
                 if (this.state.speed == 0) {
                   clearInterval(this.state.interval)
+                  this.setState({
+                    speed: 0
+                  })
                 }
               }, 50)
           }
         )
+      }
+    } else if (evt.key == "ArrowUp" && evt.type == "keydown") {
+      evt.preventDefault()
+      if( this.gears.indexOf(this.state.selectedGear) > 0) {
+        this.setState({
+          selectedGear: this.gears[this.gears.indexOf(this.state.selectedGear) - 1]
+        })
+      }
+    }  else if (evt.key == "ArrowDown" && evt.type == "keydown") {
+      evt.preventDefault()
+      if( this.gears.indexOf(this.state.selectedGear) != (this.gears.length - 1) ) {
+        this.setState({
+          selectedGear:  this.gears[this.gears.indexOf(this.state.selectedGear) + 1]
+        })
       }
     }
   }
@@ -161,8 +205,12 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
         ref={this.parentRef} >
         <defs>
           <linearGradient id="linearColors1" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="70%" stopColor="#424147"></stop>
-            <stop offset="100%" stopColor="#303136"></stop>
+            <stop offset=".7" stopColor="#424147">
+              <animate attributeName="offset" dur="500ms" from="0" to=".7" repeatCount="1" />
+            </stop>
+            <stop offset="1" stopColor="#303136">
+            <animate attributeName="offset" dur="500ms" from="0" to="1" repeatCount="1" />
+            </stop>
           </linearGradient>
           <marker id="InverseSemicircleEnd"
             viewBox="0 0 5 10" refX="0" refY="5"
@@ -199,18 +247,20 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                       strokeDasharray={this.getTotalRingLength(this.speedIndicatorShinePathRef) || 0}
                       strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorShinePathRef) || 0}
                 ></path>
-                <text className="speedometer__gear-label" {...this.getGearLabelPosition(560, 1.9)}>R</text>
-                <text className="speedometer__gear-label" {...this.getGearLabelPosition(560, 1.95)}>N</text>
-                <text className="speedometer__gear-label" {...this.getGearLabelPosition(560, 2)}>D</text>
-                <text className="speedometer__gear-label" {...this.getGearLabelPosition(560, 2.05)}>P</text>
-                <text className="speedometer__gear-label" {...this.getGearLabelPosition(560, 2.1)}>B</text>
+                <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.9)} gear="R" />
+                <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.95)} gear="N" />
+                <GearLabel active={this.state.selectedGear == "D"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2)} gear="D" />
+                <GearLabel active={this.state.selectedGear == "P"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.05)} gear="P" />
+                <GearLabel active={this.state.selectedGear == "B"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.1)} gear="B" />
             </g>
-        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">
-          {this.state.speed}
-        </text>
-        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__unit">
-          MPH
-        </text>
+            <g className={`selected__gear--${this.state.selectedGear}`}>
+              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">
+                {this.state.speed}
+              </text>
+              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__unit">
+                MPH
+              </text>
+            </g>
       </svg>
     </div>
     )
