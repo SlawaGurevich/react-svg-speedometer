@@ -1,6 +1,9 @@
 $color__indicator-ring--dark: #cfe0f4;
 $color__indicator-ring--glow-end: #f2feff;
 $color__gray--default: #414046;
+$color__background: #303136;
+$color__highlight: #cdddf6;
+$color__warn--dark: #ebc90c;
 
 @keyframes slide-in-from-bottom {
   0% {
@@ -74,6 +77,14 @@ $color__gray--default: #414046;
   &__current-speed,
   &__unit {
     transition: fill 300ms ease-in-out;
+  }
+
+  &__speed-limit-indicator {
+    stroke: $color__background;
+
+    &.transparent {
+      stroke: rgba($color__background, .1)
+    }
   }
 
   .selected__gear--P {
