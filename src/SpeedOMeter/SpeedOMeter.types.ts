@@ -2,6 +2,7 @@ export interface SpeedOMeterProps {
   theme: "dark" | "light";
   maxSpeed?: number;
   speedLimit?: number;
+  radius?: number;
 }
 
 export interface SpeedOMeterState {

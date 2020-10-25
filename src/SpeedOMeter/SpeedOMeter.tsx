@@ -25,6 +25,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   height: number
   state: SpeedOMeterState
 
+  _isMounted: boolean = false
   colorHighlight: string = "#cdddf6"
 
   parentRef: React.RefObject<SVGSVGElement>
@@ -33,8 +34,9 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   speedIndicatorShinePathRef: React.RefObject<SVGPathElement>
 
   static defaultProps = {
-    maxSpeed: 120,
-    speedLimit: 40
+    maxSpeed: 100,
+    speedLimit: 65,
+    radius: 300
   }
 
   gears:Array<string> = [
@@ -61,7 +63,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   }
 
   componentDidMount() {
-    if (this.parentRef.current) {
+    this._isMounted = true
+    if (this.parentRef.current && this._isMounted) {
       this.setState({
         width: this.parentRef.current.clientWidth / 2,
         height: this.parentRef.current.clientHeight / 2
@@ -77,7 +80,6 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   fadeInGears() {
     let gears = document.querySelectorAll(".speedometer__gear")
-    console.log(gears)
 
     for( let i = 0; i < gears.length; i++){
       setTimeout(() => { gears[i].parentElement.classList.remove("hidden") }, 150 * i)
@@ -85,10 +87,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   }
 
   handleKeypress(evt) {
-    console.log(evt)
-    if (evt.key == " ") {
+    if (evt.key == " " && this._isMounted) {
       evt.preventDefault()
-      console.log("speed")
 
       if (evt.type == "keydown" && !this.state.spacePressed && this.state.selectedGear !== "P") {
         clearInterval(this.state.interval)
@@ -139,7 +139,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   resize() {
     console.log("resize")
-    if (this.parentRef) {
+    if (this.parentRef && this._isMounted) {
       this.setState({
         width: this.parentRef.current.clientWidth,
         height: this.parentRef.current.clientHeight
@@ -157,13 +157,44 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     return this.getTotalRingLength(ref) - (this.getTotalRingLength(ref) * this.state.speed / this.props.maxSpeed)
   }
 
+  getLineOnCircle() {
+    let from = [
+      290 * -Math.sin( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
+      290 * Math.cos( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
+    ]
+
+    let to = [
+      310 * -Math.sin( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
+      310 * Math.cos( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
+    ]
+
+    return {from: from, to: to}
+  }
+
+  getCurrentCircleSpeedPosition() {
+    return {
+      x: 300 * -Math.sin( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
+      y: 300 * Math.cos( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
+    }
+  }
+
+  /**
+ * Calculates the position of the speed limit indicator. The 12pt widht is to insure it lays over the 10pt width of the background ring.
+ */
   getSpeedLimitPos() {
-    let x = -400 * Math.sin(this.mapRange([0, 1], [.13, .87], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
-    let y = 400 * Math.cos(this.mapRange([0, 1], [.13, .87], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
+    let from = {
+      x: (this.props.radius - 12) * -Math.sin(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI),
+      y: (this.props.radius - 12)* Math.cos(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI)
+    }
+
+    let to = {
+      x: (this.props.radius + 12) * -Math.sin(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI),
+      y: (this.props.radius + 12) * Math.cos(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI)
+    }
 
     return {
-      x: x,
-      y: y
+      from: from,
+      to: to
     }
   }
 
@@ -181,13 +212,21 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
   }
 
+  // Check if this is really needed.
   getMaxSpeedPos() {
-    let x = -360 * Math.sin(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
-    let y = 360 * Math.cos(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
+    let from = {
+      x: this.props.radius * -Math.sin(this.state.speed / this.props.maxSpeed * 2 * Math.PI),
+      y: this.props.radius * Math.cos(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
+    }
+
+    let to = {
+      x: (this.props.radius + 20) * -Math.sin(this.state.speed / this.props.maxSpeed * 2 * Math.PI),
+      y: (this.props.radius + 20) * Math.cos(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
+    }
 
     return {
-      x: x,
-      y: y
+      from: from,
+      to: to
     }
   }
 
@@ -212,6 +251,14 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             <animate attributeName="offset" dur="500ms" from="0" to="1" repeatCount="1" />
             </stop>
           </linearGradient>
+          <filter id="endGlow" height="300%" width="300%" x="-100%" y="-100%">
+            <feGaussianBlur stdDeviation="3"/>
+          </filter>
+          <filter id="shine" height="300%" width="300%" x="-100%" y="-100%">
+            <feGaussianBlur stdDeviation="10">
+              <animate attributeName="stdDeviation" dur="2s" from="2" to="10" repeatCount="indefinite" />
+            </feGaussianBlur>
+          </filter>
           <marker id="InverseSemicircleEnd"
             viewBox="0 0 5 10" refX="0" refY="5"
             markerUnits="strokeWidth"
@@ -220,47 +267,67 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             <path d="M 0 0 L 5 0 A 5 5 0 0 0 5 10 L 0 10 z" />
           </marker>
         </defs>
-        <g width="100%" transform={`translate(${this.state.width},${this.state.height})`} strokeWidth="20">
+        <g width="100%" transform={`translate(${this.state.width}, ${this.state.height})`} strokeWidth="20">
+          {/* Path for the gray ring in the background */}
           <path d="M -200 230
                    A 300 300 0 1 1 200 230"
-                strokeLinecap="round" fill="transparent" stroke="url(#linearColors1)" id="background-ring" ref={this.backgroundRingPathRef} ></path>
-          <path d={`M 0 0 L 0 0 ${this.getSpeedLimitPos().x} ${this.getSpeedLimitPos().y}`} strokeWidth="10" stroke="#303136">
+                id="ring__background"
+                ref={this.backgroundRingPathRef}
+                strokeLinecap="round"
+                fill="transparent"
+                stroke="url(#linearColors1)"></path>
+
+          {/* Path for the speed limit indicator. Changes based on the value of the current speed limit. */}
+          <path d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
+                transform="translate(0, 6)"
+                strokeWidth="10"
+                stroke="#303136">
           </path>
+
           <path d="M -200 230
                    A 300 300 0 1 1 200 230"
                 // marker-start="url(#InverseSemicircleEnd)"
+                id="ring__current-speed"
                 strokeDasharray={this.getTotalRingLength(this.speedIndicatorRingPathRef) || 0}
                 strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorRingPathRef) || 0}
                 fill="transparent"
                 stroke={this.state.speed <= this.props.speedLimit ? "#cfe0f4" : "#ffe208" }
-                id="ring__speed-indicator"
                 className={this.state.speed > 0 ? "is-active" : undefined}
-                ref={this.speedIndicatorRingPathRef}></path>
+                ref={this.speedIndicatorRingPathRef}>
+          </path>
 
-                <path d="M -168 195
-                        A 255 255 0 1 1 168 195"
-                      fill="transparent"
-                      stroke="url(#linearColors1)"
-                      strokeWidth="70"
-                      id="ring__speed-indicator-shine"
-                      ref={this.speedIndicatorShinePathRef}
-                      strokeDasharray={this.getTotalRingLength(this.speedIndicatorShinePathRef) || 0}
-                      strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorShinePathRef) || 0}
-                ></path>
-                <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.9)} gear="R" />
-                <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.95)} gear="N" />
-                <GearLabel active={this.state.selectedGear == "D"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2)} gear="D" />
-                <GearLabel active={this.state.selectedGear == "P"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.05)} gear="P" />
-                <GearLabel active={this.state.selectedGear == "B"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.1)} gear="B" />
-            </g>
-            <g className={`selected__gear--${this.state.selectedGear}`}>
-              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">
-                {this.state.speed}
-              </text>
-              <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__unit">
-                MPH
-              </text>
-            </g>
+          <path width="100" height="100" d={`M${this.getLineOnCircle().from[0]} ${this.getLineOnCircle().from[1]} L${this.getLineOnCircle().to[0]} ${this.getLineOnCircle().to[1]}`}
+                strokeWidth={5}
+                transform="translate(0, 6)"
+                id="ring__current-speed-highlight"
+                filter="url(#endGlow)"
+                className={this.state.speed > 5 ? "is-active" : undefined} >
+          </path>
+
+          <path d="M -170 197
+                    A 255 255 0 1 1 170 197"
+                  fill="transparent"
+                  stroke="url(#linearColors1)"
+                  strokeWidth="70"
+                  id="ring__current-speed-shine"
+                  ref={this.speedIndicatorShinePathRef}
+                  strokeDasharray={this.getTotalRingLength(this.speedIndicatorShinePathRef) || 0}
+                  strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorShinePathRef) || 0} >
+          </path>
+          <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.9)} gear="R" />
+          <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.95)} gear="N" />
+          <GearLabel active={this.state.selectedGear == "D"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2)} gear="D" />
+          <GearLabel active={this.state.selectedGear == "P"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.05)} gear="P" />
+          <GearLabel active={this.state.selectedGear == "B"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2.1)} gear="B" />
+        </g>
+        <g className={`selected__gear--${this.state.selectedGear}`}>
+          <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">
+            {this.state.speed}
+          </text>
+          <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__unit">
+            MPH
+          </text>
+        </g>
       </svg>
     </div>
     )

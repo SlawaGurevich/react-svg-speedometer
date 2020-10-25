@@ -1,4 +1,5 @@
 $color__indicator-ring--dark: #cfe0f4;
+$color__indicator-ring--glow-end: #f2feff;
 $color__gray--default: #414046;
 
 @keyframes slide-in-from-bottom {
@@ -118,19 +119,33 @@ $color__gray--default: #414046;
     }
   }
 
-  #ring__speed-indicator {
+  #ring__current-speed {
     transition: stroke-dashoffset 100ms linear, opacity 500ms ease-in-out, stroke 300ms ease-in-out;
     opacity: 0;
-
-    &-shine {
-      transition: stroke-dashoffset 100ms linear;
-      -webkit-filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
-      filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
-    }
 
     &.is-active {
       opacity: 1;
     }
+
+    &-shine {
+      transition: stroke-dashoffset 100ms linear;
+      -webkit-filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
+      filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
+    }
+
+    &-highlight {
+      opacity: 0;
+      transition: all 100ms linear, opacity 500ms ease-in-out;
+      stroke: $color__indicator-ring--glow-end;
+
+      &.is-active {
+        opacity: 1;
+      }
+    }
+  }
+
+  .circle-glow {
+    transition: all 100ms linear;
   }
 
   &-component {
