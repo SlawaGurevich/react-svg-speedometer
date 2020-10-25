@@ -25,6 +25,10 @@ $color__gray--default: #414046;
 }
 
 .speedometer {
+  #HalfRound {
+    transition: fill 300ms ease-in-out;
+  }
+
   &__canvas {
     width: 1000px;
     height: 850px;
@@ -83,7 +87,7 @@ $color__gray--default: #414046;
   &__gear {
     &-container {
       opacity: 1;
-      transition: opacity 300ms ease-in-out;
+      transition: opacity 500ms ease-in-out;
 
       &.hidden {
         opacity: 0;
@@ -127,16 +131,16 @@ $color__gray--default: #414046;
       opacity: 1;
     }
 
-    &-shine {
+    &-inner-shine {
       transition: stroke-dashoffset 100ms linear;
       -webkit-filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
       filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
     }
 
-    &-highlight {
+    &-highlight,
+    &-highlight--blurred {
       opacity: 0;
       transition: all 100ms linear, opacity 500ms ease-in-out;
-      stroke: $color__indicator-ring--glow-end;
 
       &.is-active {
         opacity: 1;

@@ -2,9 +2,11 @@ import React, { Component, createRef } from "react";
 
 import { SpeedOMeterProps, SpeedOMeterState } from "./SpeedOMeter.types";
 
+// remove
 import GradientPath from 'gradient-path'
 import { Stage, Layer, Rect, Text } from 'react-konva';
 import Konva from 'konva';
+// remove end
 
 import "./SpeedOMeter.scss";
 
@@ -27,6 +29,9 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   _isMounted: boolean = false
   colorHighlight: string = "#cdddf6"
+  colorHighlightBright: string = "#f4f8ff"
+  colorWarn: string = "#ffe208"
+  colorWarnBright: string = "#fff07f"
 
   parentRef: React.RefObject<SVGSVGElement>
   backgroundRingPathRef: React.RefObject<SVGPathElement>
@@ -35,7 +40,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   static defaultProps = {
     maxSpeed: 100,
-    speedLimit: 65,
+    speedLimit: 25,
     radius: 300
   }
 
@@ -56,7 +61,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     this.state = {
       width: 0,
       height: 0,
-      speed: 0,
+      speed: 40,
       spacePressed: false,
       selectedGear: "N"
     }
@@ -147,6 +152,10 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
   }
 
+  overSpeedLimit() {
+    return (this.state.speed > this.props.speedLimit)
+  }
+
   getTotalRingLength(ref) {
     if(ref.current){
       return ref.current.getTotalLength()
@@ -183,13 +192,13 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
  */
   getSpeedLimitPos() {
     let from = {
-      x: (this.props.radius - 12) * -Math.sin(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI),
-      y: (this.props.radius - 12)* Math.cos(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI)
+      x: (this.props.radius - 12) * -Math.sin(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
+      y: (this.props.radius - 12) * Math.cos(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
     }
 
     let to = {
-      x: (this.props.radius + 12) * -Math.sin(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI),
-      y: (this.props.radius + 12) * Math.cos(this.props.speedLimit / this.props.maxSpeed * 2 * Math.PI)
+      x: (this.props.radius + 12) * -Math.sin(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
+      y: (this.props.radius + 12) * Math.cos(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
     }
 
     return {
@@ -209,24 +218,6 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     return {
       x: x,
       y: y
-    }
-  }
-
-  // Check if this is really needed.
-  getMaxSpeedPos() {
-    let from = {
-      x: this.props.radius * -Math.sin(this.state.speed / this.props.maxSpeed * 2 * Math.PI),
-      y: this.props.radius * Math.cos(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
-    }
-
-    let to = {
-      x: (this.props.radius + 20) * -Math.sin(this.state.speed / this.props.maxSpeed * 2 * Math.PI),
-      y: (this.props.radius + 20) * Math.cos(this.state.speed / this.props.maxSpeed * 2 * Math.PI)
-    }
-
-    return {
-      from: from,
-      to: to
     }
   }
 
@@ -251,20 +242,26 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             <animate attributeName="offset" dur="500ms" from="0" to="1" repeatCount="1" />
             </stop>
           </linearGradient>
-          <filter id="endGlow" height="300%" width="300%" x="-100%" y="-100%">
-            <feGaussianBlur stdDeviation="3"/>
+          <filter id="endBlur" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="coloredBlur" />
           </filter>
-          <filter id="shine" height="300%" width="300%" x="-100%" y="-100%">
-            <feGaussianBlur stdDeviation="10">
-              <animate attributeName="stdDeviation" dur="2s" from="2" to="10" repeatCount="indefinite" />
-            </feGaussianBlur>
+          <filter id="endGlow" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">
+            <feDropShadow dx="0"
+                          dy="0"
+                          stdDeviation="4"
+                          result="shadowed"
+                          flood-color={ this.overSpeedLimit() ? this.colorWarn : this.colorHighlight }
+                          flood-opacity="1"/>
+            <feGaussianBlur in="shadowed" stdDeviation="1" />
           </filter>
-          <marker id="InverseSemicircleEnd"
-            viewBox="0 0 5 10" refX="0" refY="5"
+          <marker id="HalfRound"
+            viewBox="0 0 10 10" refX="-5" refY="5"
             markerUnits="strokeWidth"
-            markerWidth="0.5" markerHeight="1"
+            markerWidth="5"
+            markerHeight="1"
+            fill={ this.overSpeedLimit() ? this.colorWarn : this.colorHighlight }
             orient="auto">
-            <path d="M 0 0 L 5 0 A 5 5 0 0 0 5 10 L 0 10 z" />
+            <path d="M 0 0 L 0 10 A 6 6 1 1 1 0 0 z" />
           </marker>
         </defs>
         <g width="100%" transform={`translate(${this.state.width}, ${this.state.height})`} strokeWidth="20">
@@ -286,34 +283,51 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           <path d="M -200 230
                    A 300 300 0 1 1 200 230"
-                // marker-start="url(#InverseSemicircleEnd)"
+                marker-start="url(#HalfRound)"
                 id="ring__current-speed"
                 strokeDasharray={this.getTotalRingLength(this.speedIndicatorRingPathRef) || 0}
                 strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorRingPathRef) || 0}
                 fill="transparent"
-                stroke={this.state.speed <= this.props.speedLimit ? "#cfe0f4" : "#ffe208" }
+                stroke={ this.overSpeedLimit() ? this.colorWarn : this.colorHighlight }
                 className={this.state.speed > 0 ? "is-active" : undefined}
                 ref={this.speedIndicatorRingPathRef}>
           </path>
 
-          <path width="100" height="100" d={`M${this.getLineOnCircle().from[0]} ${this.getLineOnCircle().from[1]} L${this.getLineOnCircle().to[0]} ${this.getLineOnCircle().to[1]}`}
-                strokeWidth={5}
-                transform="translate(0, 6)"
-                id="ring__current-speed-highlight"
-                filter="url(#endGlow)"
-                className={this.state.speed > 5 ? "is-active" : undefined} >
-          </path>
-
-          <path d="M -170 197
-                    A 255 255 0 1 1 170 197"
+          {/* Path for the inner shine of the circle */}
+          <path d="M -165 195
+                    A 255 255 0 1 1 165 195"
                   fill="transparent"
                   stroke="url(#linearColors1)"
                   strokeWidth="70"
-                  id="ring__current-speed-shine"
+                  transform="translate(0, 6)"
+                  id="ring__current-speed-inner-shine"
                   ref={this.speedIndicatorShinePathRef}
                   strokeDasharray={this.getTotalRingLength(this.speedIndicatorShinePathRef) || 0}
                   strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorShinePathRef) || 0} >
           </path>
+
+          {/* Path for the background highlight of the underlying glow. */}
+          <path width="100" height="100" d={`M${this.getLineOnCircle().from[0]} ${this.getLineOnCircle().from[1]} L${this.getLineOnCircle().to[0]} ${this.getLineOnCircle().to[1]}`}
+                strokeWidth={15}
+                transform="translate(0, 6)"
+                id="ring__current-speed-highlight"
+                filter="url(#endBlur)"
+                stroke={ this.overSpeedLimit() ? this.colorWarnBright : this.colorHighlightBright }
+                className={this.state.speed > 5 ? "is-active" : undefined} >
+          </path>
+
+          {/* Path for the highlight at the tip of the ring. */}
+          <path id="ring__current-speed-highlight--blurred"
+                d={`M${this.getLineOnCircle().from[0]} ${this.getLineOnCircle().from[1]} L${this.getLineOnCircle().to[0]} ${this.getLineOnCircle().to[1]}`}
+                width="100"
+                height="100"
+                strokeWidth={5}
+                transform="translate(0, 6)"
+                filter="url(#endGlow)"
+                stroke={ this.overSpeedLimit() ? this.colorWarnBright : this.colorHighlightBright }
+                className={this.state.speed > 3 ? "is-active" : undefined} >
+          </path>
+
           <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.9)} gear="R" />
           <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 1.95)} gear="N" />
           <GearLabel active={this.state.selectedGear == "D"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(530, 2)} gear="D" />
