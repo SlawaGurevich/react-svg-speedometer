@@ -27,13 +27,13 @@ $color__warn--dark: #ebc90c;
   }
 }
 
+#fadeGradient {
+  transition: all 100ms linear;
+}
+
 .speedometer {
   #HalfRound {
     transition: fill 300ms ease-in-out;
-  }
-
-  #fadeGradient {
-    transition: all 200ms linear;
   }
 
   &__canvas {

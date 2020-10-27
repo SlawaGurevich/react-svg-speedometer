@@ -176,13 +176,13 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   getLineOnCircle() {
     let from = [
-      290 * -Math.sin( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
-      290 * Math.cos( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
+      290 * -Math.sin( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
+      290 * Math.cos( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
     ]
 
     let to = [
-      310 * -Math.sin( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
-      310 * Math.cos( this.mapRange([0, 1], [.115, .885], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
+      310 * -Math.sin( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
+      310 * Math.cos( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
     ]
 
     return {from: from, to: to}
@@ -190,8 +190,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   getCurrentCircleSpeedPosition(radius = this.props.radius, fixedValue = null, offset = 0) {
     return {
-      x: radius * -Math.sin( this.mapRange([0, 1], [.115, .885], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI ),
-      y: radius * Math.cos( this.mapRange([0, 1], [.115, .885], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI )
+      x: radius * -Math.sin( this.mapRange([0, 1], [.14, .86], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI ),
+      y: radius * Math.cos( this.mapRange([0, 1], [.14, .86], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI )
     }
   }
 
@@ -200,13 +200,13 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
  */
   getSpeedLimitPos() {
     let from = {
-      x: (this.props.radius - 11) * -Math.sin(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
-      y: (this.props.radius - 11) * Math.cos(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
+      x: (this.props.radius - 11) * -Math.sin(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
+      y: (this.props.radius - 11) * Math.cos(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
     }
 
     let to = {
-      x: (this.props.radius + 10) * -Math.sin(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
-      y: (this.props.radius + 10) * Math.cos(this.mapRange([0, 1], [.115, .885], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
+      x: (this.props.radius + 10) * -Math.sin(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
+      y: (this.props.radius + 10) * Math.cos(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
     }
 
     return {
@@ -217,13 +217,6 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   mapRange (from, to, s) {
     return to[0] + (s - from[0]) * (to[1] - to[0]) / (from[1] - from[0]);
-  }
-
-  getShinePosition(radius = 1, fixedValue = null, offset = 0) {
-    return {
-        x: radius * this.mapRange([-1, 1], [0, 1], -Math.sin( this.mapRange([0, 1], [.115, .885], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI )),
-        y: radius * this.mapRange([-1, 1], [0, 1], Math.cos( this.mapRange([0, 1], [.115, .885], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI ))
-    }
   }
 
   getGearLabelPosition(radius, mod) {
@@ -313,13 +306,14 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           {/* Path for the inner shine of the circle */}
           <path id="ring__current-speed-inner-shine"
-                d="M -165 195
-                    A 255 255 0 1 1 165 195"
+                d="M -198 168
+                    A 257 257 0 1 1 198 168"
                 fill="transparent"
                 stroke="url(#fadeGradient)"
-                opacity=".3"
-                strokeWidth="70"
-                transform="translate(0, 6)"
+                shapeRendering="crispEdges"
+                opacity=".15"
+                strokeWidth="76"
+                transform="translate(0, 7)"
                 ref={this.speedIndicatorShinePathRef}
                 strokeDasharray={`300, ${this.getTotalRingLength(this.speedIndicatorShinePathRef)}`}
                 strokeDashoffset={this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef)} >
@@ -332,12 +326,12 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                   L${this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef) > 0 ? this.getCurrentCircleSpeedPosition(320, -.03).x : this.getCurrentCircleSpeedPosition(320, null, -.27).x}
                    ${this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef) > 0 ? this.getCurrentCircleSpeedPosition(320, -.03).y : this.getCurrentCircleSpeedPosition(320, null, -.27).y}`}
               strokeWidth="120"
-              transform="translate(0, 6)"
+              transform="translate(0, 7)"
               stroke="transparent"></path>
 
           {/* Path for the gray ring in the background */}
-          <path d="M -200 230
-                   A 300 300 0 1 1 200 230"
+          <path d="M -230 200
+                   A 300 300 0 1 1 230 200"
                 id="ring__background"
                 ref={this.backgroundRingPathRef}
                 strokeLinecap="round"
@@ -347,14 +341,14 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           {/* Path for the speed limit indicator. Changes based on the value of the current speed limit. */}
           <path className="speedometer__speed-limit-indicator"
                 d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
-                transform="translate(0, 6)"
+                transform="translate(0, 7)"
                 strokeWidth="10">
           </path>
 
           {/* Curernt speed indicator ring. */}
           <path id="ring__current-speed"
-                d="M -200 230
-                   A 300 300 0 1 1 200 230"
+                d="M -230 200
+                   A 300 300 0 1 1 230 200"
                 markerStart="url(#HalfRound)"
                 filter="url(#ringGlow)"
                 strokeDasharray={this.getTotalRingLength(this.speedIndicatorRingPathRef) || 0}
@@ -368,7 +362,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           {/* Path for the background highlight of the underlying glow. */}
           <path width="100" height="100" d={`M${this.getLineOnCircle().from[0]} ${this.getLineOnCircle().from[1]} L${this.getLineOnCircle().to[0]} ${this.getLineOnCircle().to[1]}`}
                 strokeWidth={15}
-                transform="translate(0, 6)"
+                transform="translate(0, 7)"
                 id="ring__current-speed-highlight"
                 filter="url(#endBlur)"
                 stroke={ this.overSpeedLimit() ? this.colorWarnBright : this.colorHighlightBright }
@@ -381,7 +375,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                 width="100"
                 height="100"
                 strokeWidth={5}
-                transform="translate(0, 6)"
+                transform="translate(0, 7)"
                 filter="url(#endGlow)"
                 stroke={ this.overSpeedLimit() ? this.colorWarnBright : this.colorHighlightBright }
                 className={this.state.speed > 3 ? "is-active" : undefined} >
@@ -390,14 +384,14 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           {/* Path for the speed limit indicator. Changes based on the value of the current speed limit. */}
           <path className="speedometer__speed-limit-indicator transparent"
                 d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
-                transform="translate(0, 6)"
+                transform="translate(0, 7)"
                 strokeWidth="10">
           </path>
 
           <rect width={1000} height={1000} x={-500} y={-500} fill="transparent"></rect>
 
-          <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 1.92)} gear="R" />
-          <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 1.96)} gear="N" />
+          <GearLabel active={this.state.selectedGear == "R"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 1.905)} gear="R" />
+          <GearLabel active={this.state.selectedGear == "N"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 1.95)} gear="N" />
           <GearLabel active={this.state.selectedGear == "D"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 2)} gear="D" />
           <GearLabel active={this.state.selectedGear == "P"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 2.05)} gear="P" />
           <GearLabel active={this.state.selectedGear == "B"} activeColor={this.colorHighlight} pos={this.getGearLabelPosition(490, 2.095)} gear="B" />
