@@ -32,6 +32,10 @@ $color__warn--dark: #ebc90c;
     transition: fill 300ms ease-in-out;
   }
 
+  #fadeGradient {
+    transition: all 200ms linear;
+  }
+
   &__canvas {
     width: 1000px;
     height: 850px;
@@ -107,7 +111,7 @@ $color__warn--dark: #ebc90c;
 
     &-label {
       font-family: sans-serif;
-      font-size: 2.6em;
+      font-size: 1.4em;
       font-weight: 600;
       fill: #6a6a72;
       stroke: none;
@@ -116,20 +120,20 @@ $color__warn--dark: #ebc90c;
 
     &-circle {
       opacity: 0;
-      stroke-width: 10;
+      stroke-width: 7;
       r: 30;
       transition: all 300ms ease-in-out;
     }
 
     &--selected {
       .speedometer__gear-circle {
-        r: 50;
+        r: 38;
         opacity: 1;
       }
 
       .speedometer__gear-label {
         fill: white;
-        font-size: 3.2em;
+        font-size: 2.4em;
       }
     }
   }
@@ -146,6 +150,11 @@ $color__warn--dark: #ebc90c;
       transition: stroke-dashoffset 100ms linear;
       -webkit-filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
       filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
+
+      &--fade {
+
+        transition: all 100ms linear;
+      }
     }
 
     &-highlight,
