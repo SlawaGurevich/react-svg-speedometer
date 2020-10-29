@@ -536,14 +536,15 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
             {/* { this.overSpeedLimit() && <ParticleGenerator fill={this.colorWarnBright} radius={2} xJitter={10} yJitter={3} x={this.getPositionOnCircleSinglePoint(300).x} y={this.getPositionOnCircleSinglePoint(300).y} /> } */}
             <ParticleGenerator active={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed }
-                               pps={ 400 * this.state.speed / this.props.maxSpeed }
+                               pps={ 400 }
                                fill={CONSTANTS.colorWarnBright}
-                               radius={3}
+                               radius={1}
                                xJitter={10}
                                yJitter={10}
-                               lifetime={1000}
-                               velocity={2}
-                               gravity={5}
+                               lifetime={500}
+                               generationScale={2}
+                               velocity={1}
+                               gravity={-15}
                                x={this.getPositionOnCircleSinglePoint(300).x}
                                y={this.getPositionOnCircleSinglePoint(300).y} />
           </g>

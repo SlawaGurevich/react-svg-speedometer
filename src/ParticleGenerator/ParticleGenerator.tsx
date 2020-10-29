@@ -23,6 +23,7 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     radiusJitter: 0,
     gravity: 2,
     velocity: 8,
+    generationScale: 1,
     fill: "black"
   }
 
@@ -42,7 +43,9 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     this._isMounted = true
 
     setInterval(() => {
-      this.generateParticle()
+      for(var i = 0; i < this.props.generationScale; i++) {
+        this.generateParticle()
+      }
     }, 1000 / this.props.pps)
 
     setInterval(() => {

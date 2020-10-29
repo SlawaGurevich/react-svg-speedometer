@@ -5,11 +5,11 @@
   }
 
   100% {
-    opacity: .6;
+    opacity: 1;
     transform: scale(1)
   }
 }
 
 .particle {
-  animation: appear 800ms linear;
+  animation: appear 100ms linear;
 }

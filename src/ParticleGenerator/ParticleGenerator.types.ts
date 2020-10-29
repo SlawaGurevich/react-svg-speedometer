@@ -11,6 +11,7 @@ export interface ParticleGeneratorProps {
   radiusJitter: number,
   gravity: number,
   velocity: number,
+  generationScale: number,
   fill: string
 }
 
