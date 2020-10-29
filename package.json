@@ -46,9 +46,8 @@
     "react-dom": ">=16.8.0"
   },
   "dependencies": {
-    "gradient-path": "^2.1.0",
-    "konva": "^7.1.3",
-    "react-konva": "^16.13.0-6",
+    "color": "^3.1.3",
+    "sc-color": "^0.4.0",
     "tinygradient": "^1.1.2"
   }
 }

@@ -1,0 +1,15 @@
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: scale(.9)
+  }
+
+  100% {
+    opacity: .6;
+    transform: scale(1)
+  }
+}
+
+.particle {
+  animation: appear 800ms linear;
+}

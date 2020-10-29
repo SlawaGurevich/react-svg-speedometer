@@ -27,34 +27,11 @@ $color__warn--dark: #ebc90c;
   }
 }
 
-#fadeGradient {
-  transition: all 100ms linear;
-}
-
 .speedometer {
-  #HalfRound {
-    transition: fill 300ms ease-in-out;
-  }
-
   &__canvas {
     width: 1000px;
     height: 850px;
     border: 1px solid red;
-  }
-
-  &__current-speed {
-    font-family: sans-serif;
-    font-size: 12em;
-    letter-spacing: .04em;
-    font-weight: bold;
-  }
-
-  &__unit {
-    font-family: sans-serif;
-    fill: white;
-    font-size: 2em;
-    letter-spacing: 1px;
-    transform: translateY(12%)
   }
 
   &__inner-ring {
@@ -66,6 +43,10 @@ $color__warn--dark: #ebc90c;
   }
 
   &__current-speed {
+    font-family: sans-serif;
+    font-size: 12em;
+    letter-spacing: .04em;
+    font-weight: bold;
     transform: translateY(20px);
     opacity: 0;
     animation: 500ms ease-out 200ms 1 slide-in-from-bottom;
@@ -73,6 +54,11 @@ $color__warn--dark: #ebc90c;
   }
 
   &__unit {
+    font-family: sans-serif;
+    fill: white;
+    font-size: 2em;
+    letter-spacing: 1px;
+    transform: translateY(11.5%);
     opacity: 0;
     animation: 300ms ease-in-out 600ms 1 fade-in;
     animation-fill-mode: forwards;
@@ -113,7 +99,6 @@ $color__warn--dark: #ebc90c;
       font-family: sans-serif;
       font-size: 1.4em;
       font-weight: 600;
-      fill: #6a6a72;
       stroke: none;
       transition: font-size 300ms ease-in-out, fill 300ms ease-in-out;
     }
@@ -132,14 +117,13 @@ $color__warn--dark: #ebc90c;
       }
 
       .speedometer__gear-label {
-        fill: white;
         font-size: 2.4em;
       }
     }
   }
 
   #ring__current-speed {
-    transition: stroke-dashoffset 100ms linear, opacity 500ms ease-in-out, stroke 300ms ease-in-out;
+    transition: stroke-dashoffset 100ms linear, opacity 500ms ease-in-out, stroke 100ms ease-in, stroke-width 400ms cubic-bezier(.75,1.68,.82,1.72);
     opacity: 0;
 
     &.is-active {
@@ -147,13 +131,11 @@ $color__warn--dark: #ebc90c;
     }
 
     &-inner-shine {
-      transition: stroke-dashoffset 100ms linear;
-      -webkit-filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
-      filter: drop-shadow( 3px 3px 2px rgba(255, 255, 255, .7));
+      opacity: 0;
+      transition: stroke-dashoffset 100ms linear, opacity 100ms linear;
 
-      &--fade {
-
-        transition: all 100ms linear;
+      &.active {
+        opacity: .15;
       }
     }
 
@@ -164,6 +146,21 @@ $color__warn--dark: #ebc90c;
 
       &.is-active {
         opacity: 1;
+      }
+    }
+
+    &--effect {
+      transition: 100ms;
+      transition-property: transform;
+      transition-timing-function: linear;
+
+      &.visible .attached-particle {
+        opacity: 1;
+      }
+
+      .attached-particle {
+        opacity: 0;
+        transition: cx 100ms linear, cy 100ms linear;
       }
     }
   }
