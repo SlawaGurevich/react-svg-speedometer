@@ -81,7 +81,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     maxSpeed: 100,
     speedLimit: 65,
     startFromSpeed: 0,
-    radius: 300
+    radius: 300,
+    particleOptions: {}
   }
 
   // gears
@@ -325,17 +326,26 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           <filter id="shadowed-goo">
               <feGaussianBlur in="SourceGraphic"stdDeviation="1" />
-              {/* <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 16 -4" result="goo" /> */}
-              {/* <feGaussianBlur in="goo" stdDeviation="1" result="shadow" /> */}
-              {/* <feColorMatrix in="shadow" mode="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 -0.2" result="shadow" /> */}
+              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 16 -4" result="goo" />
+              <feGaussianBlur in="goo" stdDeviation="1" result="shadow" />
+              <feColorMatrix in="shadow" mode="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 -0.2" result="shadow" />
               {/* <feOffset in="shadow" dx="1" dy="1" result="shadow" /> */}
               {/* <feBlend in2="shadow" in="goo" result="goo" /> */}
-              {/* <feBlend in2="goo" in="SourceGraphic" result="mix" /> */}
+              <feBlend in2="goo" in="SourceGraphic" result="mix" />
           </filter>
 
-          {this.overSpeedLimit() && <filter id="endBlur" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">"
-            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="coloredBlur" />
-          </filter>}
+          <filter id="endBlur" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">"
+            <feGaussianBlur in="SourceGraphic" stdDeviation={this.overSpeedLimit() ? 5 : 0} result="coloredBlur" />
+          </filter>
+
+          <filter id="particle-glow">
+          <feDropShadow dx="0"
+                          dy="0"
+                          in="SourceGraphic"
+                          stdDeviation="20"
+                          floodColor={ "black" }
+                          floodOpacity="1"></feDropShadow>
+          </filter>
 
           <filter id="ringGlow">
             <feDropShadow dx="0"
@@ -536,17 +546,9 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
             {/* { this.overSpeedLimit() && <ParticleGenerator fill={this.colorWarnBright} radius={2} xJitter={10} yJitter={3} x={this.getPositionOnCircleSinglePoint(300).x} y={this.getPositionOnCircleSinglePoint(300).y} /> } */}
             <ParticleGenerator active={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed }
-                               pps={ 400 }
-                               fill={CONSTANTS.colorWarnBright}
-                               radius={1}
-                               xJitter={10}
-                               yJitter={10}
-                               lifetime={500}
-                               generationScale={2}
-                               velocity={1}
-                               gravity={-15}
                                x={this.getPositionOnCircleSinglePoint(300).x}
-                               y={this.getPositionOnCircleSinglePoint(300).y} />
+                               y={this.getPositionOnCircleSinglePoint(300).y}
+                               { ...this.props.particleOptions } />
           </g>
         <g className={`selected__gear--${this.state.selectedGear}`}>
           <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">

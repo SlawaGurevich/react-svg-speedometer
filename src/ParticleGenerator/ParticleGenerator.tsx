@@ -4,6 +4,8 @@ import Particle from './Particle'
 
 import { ParticleGeneratorProps, ParticleGeneratorState } from './ParticleGenerator.types'
 
+import * as CONSTANTS from '../util/constants'
+
 import './ParticleGenerator.scss'
 
 class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGeneratorState> {
@@ -14,17 +16,17 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     active: false,
     x: 0,
     y: 0,
-    pps: 50,
+    pps: 400,
     maxParticles: 1000,
-    lifetime: 2000,
-    xJitter: 1,
-    yJitter: 1,
-    radius: 4,
+    lifetime: 500,
+    xJitter: 10,
+    yJitter: 10,
+    radius: 7,
     radiusJitter: 0,
-    gravity: 2,
-    velocity: 8,
+    gravity: -15,
+    velocity: 1,
     generationScale: 1,
-    fill: "black"
+    fill: CONSTANTS.colorWarnBright
   }
 
   constructor(props: ParticleGeneratorProps) {

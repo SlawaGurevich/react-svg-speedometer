@@ -31,7 +31,7 @@ class Particle extends Component<ParticleProps, ParticleState> {
               cx={this.props.x}
               cy={this.props.y}
               r={this.props.radius}
-              fill={this.props.fill}></circle>
+              fill={this.props.fill} ></circle>
     )
   }
 }
