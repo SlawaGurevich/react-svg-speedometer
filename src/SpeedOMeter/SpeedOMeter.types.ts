@@ -1,5 +1,4 @@
 export interface SpeedOMeterProps {
-  theme: "dark" | "light";
   maxSpeed?: number;
   speedLimit?: number;
   startFromSpeed?: number;
@@ -23,7 +22,7 @@ export interface SpeedOMeterState {
   width: number;
   height: number;
   speed: number;
-  interval?: NodeJS.Timeout;
+  interval?: number | undefined;
   spacePressed: boolean;
   selectedGear?: string;
 }

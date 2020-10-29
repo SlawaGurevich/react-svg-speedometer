@@ -1,3 +1,4 @@
-import SpeedOMeter from './SpeedOMeter/SpeedOMeter'
+import SpeedOMeter, { GearLabel } from './SpeedOMeter/SpeedOMeter'
 
-export { SpeedOMeter }
+export default SpeedOMeter
+export { GearLabel }

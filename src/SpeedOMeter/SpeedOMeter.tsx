@@ -1,14 +1,13 @@
 import React, { Component, createRef } from "react";
-
-import { SpeedOMeterProps, SpeedOMeterState } from "./SpeedOMeter.types";
-
-import ParticleGenerator from '../ParticleGenerator/ParticleGenerator'
 import Color from 'color'
 
 import * as CONSTANTS from '../util/constants'
 
+import { SpeedOMeterProps, SpeedOMeterState } from "./SpeedOMeter.types";
+import ParticleGenerator from '../ParticleGenerator/ParticleGenerator'
 import "./SpeedOMeter.scss";
 
+// GearLabel component for rendering the gear switcher
 const GearLabel = ({options}) => {
   let optionParams = {
     pos: options.pos || {x: 0, y: 0},
@@ -17,16 +16,29 @@ const GearLabel = ({options}) => {
     activeTextColor: options.activeTextColor || "white",
     active: options.active || false
   }
+
   return(
     <g className="speedometer__gear-container hidden">
       <g className={`speedometer__gear hidden ${optionParams.active ? "speedometer__gear--selected" : "" }`}>
-        <text className="speedometer__gear-label" fill={ optionParams.active ? optionParams.activeTextColor : "#6a6a72" } dominantBaseline="middle" textAnchor="middle" {...optionParams.pos}>{optionParams.gear}</text>
-        <circle className="speedometer__gear-circle" transform="translate(0, -3)" cx={optionParams.pos.x} cy={optionParams.pos.y} fill="none" r={50} stroke={optionParams.activeColor}></circle>
+        <text className="speedometer__gear-label"
+              fill={ optionParams.active ? optionParams.activeTextColor : CONSTANTS.colorGray }
+              dominantBaseline="middle"
+              textAnchor="middle" {...optionParams.pos}>
+                {optionParams.gear}
+        </text>
+        <circle className="speedometer__gear-circle"
+                transform="translate(0, -3)"
+                r={50}
+                cx={optionParams.pos.x}
+                cy={optionParams.pos.y}
+                fill="none"
+                stroke={optionParams.activeColor}></circle>
       </g>
     </g>
   )
 }
 
+// Component to render the particles attached to the tip of the gauge
 const AttachedParticle = ({options}) => {
   let optionParams = {
     pos: options.pos || 300,
@@ -50,7 +62,6 @@ const AttachedParticle = ({options}) => {
 }
 
 class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
-  theme: string
   state: SpeedOMeterState
 
   colorWarnDynamic = () => {
@@ -93,7 +104,6 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   constructor(props: SpeedOMeterProps) {
     super(props)
-    this.theme = props.theme
     this.parentRef = React.createRef<SVGSVGElement>()
     this.backgroundRingPathRef = React.createRef<SVGPathElement>()
     this.speedIndicatorRingPathRef = React.createRef<SVGPathElement>()
@@ -134,7 +144,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
       if (evt.type == "keydown" && !this.state.spacePressed && this.state.selectedGear !== "P") {
         clearInterval(this.state.interval)
         this.setState({
-          interval: setInterval(() => {
+          interval: window.setInterval(() => {
             this.setState({
               speed: this.state.speed < this.props.maxSpeed ? this.state.speed + 1 : this.state.speed,
               spacePressed: true
@@ -146,7 +156,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
         this.setState(
           {
             spacePressed: false,
-            interval: setInterval(() => {
+            interval: window.setInterval(() => {
                 this.setState({
                   speed: this.state.speed - 1
                 })
@@ -215,18 +225,21 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   }
 
   // Get position array for rendering things on the circle
-  getPositionOnCircleFromTo(width = 20) {
-    let from = [
-      (this.props.radius - width / 2) * -Math.sin( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
-      (this.props.radius - width / 2) * Math.cos( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
-    ]
+  getPositionOnCircleFromTo(width = 20, fixedValue = this.state.speed / this.props.maxSpeed) {
+    let from = {
+      x: (this.props.radius - width / 2) * -Math.sin( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI ),
+      y: (this.props.radius - width / 2) * Math.cos( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI )
+    }
 
-    let to = [
-      (this.props.radius + width / 2) * -Math.sin( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI ),
-      (this.props.radius + width / 2) * Math.cos( this.mapRange([0, 1], [.14, .86], this.state.speed / this.props.maxSpeed) * 2 * Math.PI )
-    ]
+    let to = {
+      x: (this.props.radius + width / 2) * -Math.sin( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI ),
+      y: (this.props.radius + width / 2) * Math.cos( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI )
+    }
 
-    return {from: from, to: to}
+
+    return {
+      from: from, to: to
+    }
   }
 
   // Gets a single point from the circle path
@@ -283,36 +296,30 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     return (
       <div
       data-testid="speedometer-component"
-      className={`speedometer-component speedometer speedometer-component-${this.theme}`} >
+      className="speedometer-component speedometer" >
       <svg className="speedometer__canvas"
         width="100%"
         height="100%"
         viewBox="0 0 1000 850"
         ref={this.parentRef} >
-        {/* Gradient definitions */}
-        <defs>
-          {/* Gradients */}
 
-          <linearGradient id="backgroundRingGradient" width={100} height={100} x1="0" y1="0" x2="0" y2="1">
-            <stop offset=".7" stopColor="#424147">
+        <defs>
+          {/* Gradient definitions */}
+          <linearGradient id="background-ring-gradient" width={100} height={100} x1="0" y1="0" x2="0" y2="1">
+            <stop offset=".7" stopColor={CONSTANTS.colorGrayDark}>
               <animate attributeName="offset" dur="500ms" from="0" to=".7" repeatCount="1" />
             </stop>
-            <stop offset="1" stopColor="#303136">
+            <stop offset="1" stopColor={CONSTANTS.colorBackground}>
             <animate attributeName="offset" dur="500ms" from="0" to="1" repeatCount="1" />
             </stop>
           </linearGradient>
 
-
-          <linearGradient id="currentSpeedGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset=".4" stopColor={this.overSpeedLimit() ? CONSTANTS.colorWarn : CONSTANTS.colorHighlight}>
-              {/* <animate attributeName="offset" dur="3s" values="0;1;0" repeatCount="indefinite" /> */}
-            </stop>
-            <stop offset="1" stopColor={this.overSpeedLimit() ? this.colorWarnBrightDynamic() : this.colorHighlightBrightDynamic() }>
-              {/* <animate attributeName="stop-color" dur="2s" values={`${this.colorWarnDynamic()};${this.colorWarnBrightDynamic()};${this.colorWarnDynamic()}`} repeatCount="indefinite" /> */}
-            </stop>
+          <linearGradient id="current-speed-gradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset=".4" stopColor={this.overSpeedLimit() ? CONSTANTS.colorWarn : CONSTANTS.colorHighlight}></stop>
+            <stop offset="1" stopColor={this.overSpeedLimit() ? this.colorWarnBrightDynamic() : CONSTANTS.colorHighlight }></stop>
           </linearGradient>
 
-          <radialGradient id="fadeGradient"
+          <radialGradient id="fade-gradient"
                           cx={ this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef) > 0 ? this.getPositionOnCircleSinglePoint(300, -.08).x : this.getPositionOnCircleSinglePoint(300, null, -.32).x }
                           cy={ this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef) > 0 ? this.getPositionOnCircleSinglePoint(300, -.08).y : this.getPositionOnCircleSinglePoint(300, null, -.32).y }
                           r="350"
@@ -323,8 +330,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           </radialGradient>
 
           {/* Filter */}
-
-          <filter id="shadowed-goo">
+          <filter id="particles">
               <feGaussianBlur in="SourceGraphic"stdDeviation="1" />
               <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 16 -4" result="goo" />
               <feGaussianBlur in="goo" stdDeviation="1" result="shadow" />
@@ -334,7 +340,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
               <feBlend in2="goo" in="SourceGraphic" result="mix" />
           </filter>
 
-          <filter id="endBlur" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">"
+          <filter id="end-blur" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">"
             <feGaussianBlur in="SourceGraphic" stdDeviation={this.overSpeedLimit() ? 5 : 0} result="coloredBlur" />
           </filter>
 
@@ -347,7 +353,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                           floodOpacity="1"></feDropShadow>
           </filter>
 
-          <filter id="ringGlow">
+          <filter id="ring-glow">
             <feDropShadow dx="0"
                           dy="0"
                           in="SourceGraphic"
@@ -358,14 +364,11 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             </feDropShadow>
           </filter>
 
-          <filter id="shineBlur">
+          <filter id="shine-blur">
             <feGaussianBlur stdDeviation={1} in="SourceGraphic"></feGaussianBlur>
           </filter>
 
-          <filter id="glowFadeBlur" >
-            <feGaussianBlur stdDeviation="10" in="SourceGraphic"></feGaussianBlur>
-          </filter>
-          <filter id="endGlow" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">
+          <filter id="end-glow" height="300%" width="300%" x="-100%" y="-100%" filterUnits="userSpaceOnUse">
             <feDropShadow dx="0"
                           dy="0"
                           stdDeviation="4"
@@ -374,6 +377,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                           floodOpacity="1"/>
             <feGaussianBlur in="shadowed" stdDeviation="1" />
           </filter>
+
+          {/* Custom marker for the current speed ring */}
           <marker id="HalfRound"
             viewBox="0 0 10 10" refX="-9" refY="5"
             markerUnits="strokeWidth"
@@ -392,12 +397,12 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                 d="M -199 166
                     A 257 257 0 1 1 199 166"
                 fill="transparent"
-                stroke="url(#fadeGradient)"
+                stroke="url(#fade-gradient)"
                 shapeRendering="crispEdges"
                 opacity=".15"
                 strokeWidth="78"
                 transform="translate(0, 7)"
-                filter="url(#shineBlur)"
+                filter="url(#shine-blur)"
                 ref={this.speedIndicatorShinePathRef}
                 strokeDasharray={`300, ${this.getTotalRingLength(this.speedIndicatorShinePathRef)}`}
                 strokeDashoffset={this.getStrokeDashOffsetShine(this.speedIndicatorShinePathRef)} >
@@ -411,53 +416,59 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                 strokeLinecap="round"
                 strokeWidth={20}
                 fill="transparent"
-                stroke="url(#backgroundRingGradient)"></path>
+                stroke="url(#background-ring-gradient)"></path>
 
-          {/* Path for the speed limit indicator. Changes based on the value of the current speed limit. */}
+          {/* Current speed limit indicator */}
           <path className="speedometer__speed-limit-indicator"
-                d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
+                d={`M ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).from.x}
+                    ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).from .y}
+                    L ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).to.x}
+                    ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).to.y}`}
                 transform="translate(0, 7)"
                 strokeWidth="10">
           </path>
 
-          {/* Curernt speed indicator ring. */}
+          {/* Path for the speed limit indicator. The main ring, so to say. */}
           <path id="ring__current-speed"
+                className={this.state.speed > 0 ? "is-active" : undefined}
                 d="M -230 200
                    A 300 300 0 1 1 230 200"
                 markerStart="url(#HalfRound)"
-                filter="url(#ringGlow)"
+                filter="url(#ring-glow)"
                 strokeDasharray={this.getTotalRingLength(this.speedIndicatorRingPathRef) || 0}
                 strokeDashoffset={this.getStrokeDashOffset(this.speedIndicatorRingPathRef) || 0}
                 fill="transparent"
-                stroke="url(#currentSpeedGradient)"
+                stroke="url(#current-speed-gradient)"
                 strokeWidth={20}
-                className={this.state.speed > 0 ? "is-active" : undefined}
                 ref={this.speedIndicatorRingPathRef}>
           </path>
 
           {/* Path for the highlight of the underlying glow. */}
-          <path width="100" height="100" d={`M${this.getPositionOnCircleFromTo().from[0]} ${this.getPositionOnCircleFromTo().from[1]} L${this.getPositionOnCircleFromTo().to[0]} ${this.getPositionOnCircleFromTo().to[1]}`}
-                strokeWidth={15}
+          <path id="ring__current-speed-highlight"
+                className={this.state.speed > 5 ? "is-active" : undefined}
+                width="100" height="100" d={`M${this.getPositionOnCircleFromTo().from.x} ${this.getPositionOnCircleFromTo().from.y} L${this.getPositionOnCircleFromTo().to.x} ${this.getPositionOnCircleFromTo().to.y}`}
+                strokeWidth={5}
                 transform="translate(0, 7)"
-                id="ring__current-speed-highlight"
-                filter="url(#endBlur)"
-                stroke={ this.overSpeedLimit() ? this.colorWarnBrightDynamic() : this.colorHighlightBrightDynamic() }
-                className={this.state.speed > 5 ? "is-active" : undefined} >
+                filter="url(#end-blur)"
+                stroke={ this.overSpeedLimit() ? this.colorWarnBrightDynamic() : this.colorHighlightBrightDynamic() } >
           </path>
 
           {/* Path for the highlight at the tip of the ring. */}
           <path id="ring__current-speed-highlight--blurred"
-                d={`M${this.getPositionOnCircleFromTo().from[0]} ${this.getPositionOnCircleFromTo().from[1]} L${this.getPositionOnCircleFromTo().to[0]} ${this.getPositionOnCircleFromTo().to[1]}`}
+                d={`M${this.getPositionOnCircleFromTo().from.x}
+                    ${this.getPositionOnCircleFromTo().from.y}
+                    L${this.getPositionOnCircleFromTo().to.x}
+                    ${this.getPositionOnCircleFromTo().to.y}`}
                 width="100"
                 height="100"
                 strokeWidth={5}
                 transform="translate(0, 7)"
-                filter="url(#endGlow)"
+                filter="url(#end-glow)"
                 stroke={ this.overSpeedLimit() ? this.colorWarnBrightDynamic() : this.colorHighlightBrightDynamic() }
                 className={this.state.speed > 3 ? "is-active" : undefined} >
           </path>
 
-          {/* Path for the speed limit indicator. Changes based on the value of the current speed limit. */}
+          {/* Path for the speed limit indicator. Another transparent instance to lay over the speed indicator ring for better usability. */}
           <path className="speedometer__speed-limit-indicator transparent"
                 d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
                 transform="translate(0, 7)"
@@ -471,6 +482,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             pos: this.getGearLabelPosition(490, 1.905),
             gear: "R"
           }} />
+
           <GearLabel options={{
             active: this.state.selectedGear == "N",
             activeColor: CONSTANTS.colorNeutralGreen,
@@ -478,18 +490,21 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             pos: this.getGearLabelPosition(490, 1.95),
             gear: "N"
           }} />
+
           <GearLabel options={{
             active: this.state.selectedGear == "D",
             activeColor: CONSTANTS.colorHighlight,
             pos: this.getGearLabelPosition(490, 2),
             gear: "D"
           }} />
+
           <GearLabel options={{
             active: this.state.selectedGear == "P",
             activeColor: CONSTANTS.colorHighlight,
             pos: this.getGearLabelPosition(490, 2.05),
             gear: "P"
           }} />
+
           <GearLabel options={{
             active: this.state.selectedGear == "B",
             activeColor: CONSTANTS.colorHighlight,
@@ -498,63 +513,75 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           }} />
         </g>
 
-        <g id="ring__current-speed--effect" className={ this.overSpeedLimit() ? "visible" : undefined } transform={`translate(${this.state.width}, ${this.state.height + 7})`} filter="url(#shadowed-goo)">
-            <AttachedParticle options={{
-              pos: this.getPositionOnCircleSinglePoint(293, null, .002),
-              r1: 2,
-              r2: 4,
-              startColor: this.colorWarnDynamic(),
-              endColor: this.colorWarnBrightDynamic(),
-              animationDuration: 500
-            }} />
+        <g id="ring__current-speed--effect"
+           transform={`translate(${this.state.width}, ${this.state.height + 7})`}
+           filter="url(#particles)">
+             <g className={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed ? "visible" : undefined }>
+              <AttachedParticle options={{
+                pos: this.getPositionOnCircleSinglePoint(293, null, .002),
+                r1: 2,
+                r2: 4,
+                startColor: this.colorWarnDynamic(),
+                endColor: this.colorWarnBrightDynamic(),
+                animationDuration: 500
+              }} />
 
-            <AttachedParticle options={{
-              pos: this.getPositionOnCircleSinglePoint(298, null, .003),
-              r1: 7,
-              r2: 3,
-              startColor: this.colorWarnBrightDynamic(),
-              endColor: this.colorWarnDynamic(),
-              animationDuration: 500
-            }} />
+              <AttachedParticle options={{
+                pos: this.getPositionOnCircleSinglePoint(298, null, .003),
+                r1: 4,
+                r2: 2,
+                startColor: this.colorWarnBrightDynamic(),
+                endColor: this.colorWarnDynamic(),
+                animationDuration: 500
+              }} />
 
-            <AttachedParticle options={{
-              pos: this.getPositionOnCircleSinglePoint(300, null, .002),
-              r1: 6,
-              r2: 2,
-              startColor: this.colorWarnDynamic(),
-              endColor: this.colorWarnBrightDynamic(),
-              animationDuration: 500
-            }} />
+              <AttachedParticle options={{
+                pos: this.getPositionOnCircleSinglePoint(300, null, .002),
+                r1: 3,
+                r2: 1,
+                startColor: this.colorWarnDynamic(),
+                endColor: this.colorWarnBrightDynamic(),
+                animationDuration: 500
+              }} />
 
-            <AttachedParticle options={{
-              pos: this.getPositionOnCircleSinglePoint(302, null, .003),
-              r1: 2,
-              r2: 5,
-              startColor: this.colorWarnBrightDynamic(),
-              endColor: this.colorWarnDynamic(),
-              animationDuration: 500
-            }} />
+              <AttachedParticle options={{
+                pos: this.getPositionOnCircleSinglePoint(302, null, .003),
+                r1: 1,
+                r2: 4,
+                startColor: this.colorWarnBrightDynamic(),
+                endColor: this.colorWarnDynamic(),
+                animationDuration: 500
+              }} />
 
-            <AttachedParticle options={{
-              pos: this.getPositionOnCircleSinglePoint(307, null, .002),
-              r1: 5,
-              r2: 2,
-              startColor: this.colorWarnDynamic(),
-              endColor: this.colorWarnBrightDynamic(),
-              animationDuration: 500
-            }} />
-
-            {/* { this.overSpeedLimit() && <ParticleGenerator fill={this.colorWarnBright} radius={2} xJitter={10} yJitter={3} x={this.getPositionOnCircleSinglePoint(300).x} y={this.getPositionOnCircleSinglePoint(300).y} /> } */}
+              <AttachedParticle options={{
+                pos: this.getPositionOnCircleSinglePoint(307, null, .002),
+                r1: 4,
+                r2: 1,
+                startColor: this.colorWarnDynamic(),
+                endColor: this.colorWarnBrightDynamic(),
+                animationDuration: 500
+              }} />
+            </g>
             <ParticleGenerator active={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed }
                                x={this.getPositionOnCircleSinglePoint(300).x}
                                y={this.getPositionOnCircleSinglePoint(300).y}
+                               fill={this.colorWarnBrightDynamic()}
                                { ...this.props.particleOptions } />
-          </g>
+        </g>
         <g className={`selected__gear--${this.state.selectedGear}`}>
-          <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__current-speed" stroke="transparent" fill="white">
+          <text id="speedometer__current-speed"
+                className="speedometer__current-speed"
+                x="50%"
+                y="50%"
+                dominantBaseline="middle"
+                textAnchor="middle" >
             {this.state.speed}
           </text>
-          <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="speedometer__unit">
+          <text className="speedometer__unit"
+                x="50%"
+                y="50%"
+                dominantBaseline="middle"
+                textAnchor="middle" >
             MPH
           </text>
         </g>
@@ -564,4 +591,5 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   }
 };
 
-export default SpeedOMeter;
+export default SpeedOMeter
+export { GearLabel }

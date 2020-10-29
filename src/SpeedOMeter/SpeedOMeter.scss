@@ -27,11 +27,14 @@ $color__warn--dark: #ebc90c;
   }
 }
 
+#HalfRound {
+
+}
+
 .speedometer {
   &__canvas {
     width: 1000px;
     height: 850px;
-    border: 1px solid red;
   }
 
   &__inner-ring {
@@ -43,10 +46,12 @@ $color__warn--dark: #ebc90c;
   }
 
   &__current-speed {
+    fill: white;
+    stroke: transparent;
     font-family: sans-serif;
     font-size: 12em;
-    letter-spacing: .04em;
     font-weight: bold;
+    letter-spacing: .04em;
     transform: translateY(20px);
     opacity: 0;
     animation: 500ms ease-out 200ms 1 slide-in-from-bottom;
@@ -66,7 +71,7 @@ $color__warn--dark: #ebc90c;
 
   &__current-speed,
   &__unit {
-    transition: fill 300ms ease-in-out;
+    transition: fill 300ms ease-in;
   }
 
   &__speed-limit-indicator {
@@ -154,7 +159,7 @@ $color__warn--dark: #ebc90c;
       transition-property: transform;
       transition-timing-function: linear;
 
-      &.visible .attached-particle {
+      .visible .attached-particle {
         opacity: 1;
       }
 

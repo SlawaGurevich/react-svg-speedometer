@@ -16,12 +16,12 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     active: false,
     x: 0,
     y: 0,
-    pps: 400,
+    pps: 500,
     maxParticles: 1000,
     lifetime: 500,
     xJitter: 10,
     yJitter: 10,
-    radius: 7,
+    radius: 1,
     radiusJitter: 0,
     gravity: -15,
     velocity: 1,
@@ -70,35 +70,39 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
 
       let copiedParticlesInState = [...this.state.particles]
       copiedParticlesInState.push(newParticle)
-      console.log("concatenatedParticles", copiedParticlesInState)
 
-      this.setState({
-        particles: copiedParticlesInState
-      })
+      if(this._isMounted) {
+        this.setState({
+          particles: copiedParticlesInState
+        })
+      }
     }
   }
 
   moveParticles() {
     if( this.state.particles.length > 0) {
-      console.log("particles", this.state.particles)
       let movedParticles = this.state.particles.map(particle => { particle.x += (particle.velocity * particle.vx); particle.y += (particle.velocity * particle.vy + this.props.gravity); return particle })
-      this.setState({
-        particles: movedParticles
-      })
+      if(this._isMounted) {
+        this.setState({
+          particles: movedParticles
+        })
+      }
     }
   }
 
   checkParticles() {
     let filteredParticles = this.state.particles.filter( particle => { return new Date().getTime() - particle.created.getTime() < this.props.lifetime } )
-    this.setState({
-      particles: filteredParticles
-    })
+    if(this._isMounted) {
+      this.setState({
+        particles: filteredParticles
+      })
+    }
   }
 
   render() {
     return (
-      this.state.particles.map(particle => (
-        <Particle x={particle.x} y={particle.y} radius={particle.radius} fill={this.props.fill}/>
+      this.state.particles.map( (particle, i) => (
+        <Particle key={i} x={particle.x} y={particle.y} radius={particle.radius} fill={this.props.fill}/>
       ))
     )
   }

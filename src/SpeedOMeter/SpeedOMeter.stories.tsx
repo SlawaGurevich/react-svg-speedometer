@@ -5,6 +5,6 @@ export default {
   title: "SpeedOMeter"
 };
 
-export const Dark = () => <SpeedOMeter startFromSpeed={90} theme="dark" />;
+export const Default = () => <SpeedOMeter maxSpeed={100} startFromSpeed={80} speedLimit={65} />;
 
-export const Light = () => <SpeedOMeter theme="light" />;
+export const NoProps = () => <SpeedOMeter />;
