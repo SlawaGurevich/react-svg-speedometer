@@ -8,6 +8,10 @@ import * as CONSTANTS from '../util/constants'
 
 import './ParticleGenerator.scss'
 
+/**
+ * Responsible for generating particles.
+ * @class
+ */
 class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGeneratorState> {
   state: ParticleGeneratorState
   _isMounted: boolean = false
@@ -37,10 +41,6 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     }
   }
 
-  randomNumber(min, max, floor = true) {
-    return floor ? Math.floor(Math.random() * (max - min + 1) + min) : (Math.random() * (max - min + 1) + min)
-  }
-
   componentDidMount() {
     this._isMounted = true
 
@@ -56,6 +56,29 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     }, 50)
   }
 
+
+  /**
+ * Random number generator helper function.
+ *
+ * Used for generating a random number for the different jitters.
+ *
+ * @param {number}    min      The minimum value to generate from.
+ * @param {number}    max      The maximum value to generate from.
+ * @param {boolean}   floor    Whether the number should be floored after generation.
+ *
+ * @return {number}   The randomly generated number.
+ */
+  randomNumber(min, max, floor = true) {
+    return floor ? Math.floor(Math.random() * (max - min + 1) + min) : (Math.random() * (max - min + 1) + min)
+  }
+
+
+/**
+ * Generates a particle.
+ *
+ * This function is called on every cycle to generate particles and add them to the global array.
+ *
+ */
   generateParticle() {
     if ( this.props.active && this.state.particles.length < this.props.maxParticles ) {
       let newParticle = {
@@ -79,10 +102,26 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     }
   }
 
+
+/**
+ * Moves all particles.
+ *
+ * The particles are moved according to their saved properties, based on velocity, gravity and position.
+ *
+ */
   moveParticles() {
+    // Only do that, if there are particles to move
     if( this.state.particles.length > 0) {
-      let movedParticles = this.state.particles.map(particle => { particle.x += (particle.velocity * particle.vx); particle.y += (particle.velocity * particle.vy + this.props.gravity); return particle })
+      // Map all particles to their new positions and return
+      let movedParticles = this.state.particles.map(particle => {
+        particle.x += (particle.velocity * particle.vx);
+        particle.y += (particle.velocity * particle.vy + this.props.gravity);
+        return particle
+      })
+
+      // If the component is mounted
       if(this._isMounted) {
+        // Set the new particles
         this.setState({
           particles: movedParticles
         })
@@ -90,9 +129,22 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
     }
   }
 
+
+  /**
+ * Checks the particles.
+ *
+ * Checks whether particles have expired and removes them if they are over their lifetime.
+ *
+ */
   checkParticles() {
-    let filteredParticles = this.state.particles.filter( particle => { return new Date().getTime() - particle.created.getTime() < this.props.lifetime } )
+    // Filter the particles, removing ones that are exired
+    let filteredParticles = this.state.particles.filter( particle => {
+      return new Date().getTime() - particle.created.getTime() < this.props.lifetime
+    })
+
+    // If the component is mounted
     if(this._isMounted) {
+      // Set the new particles
       this.setState({
         particles: filteredParticles
       })
@@ -102,7 +154,11 @@ class ParticleGenerator extends Component<ParticleGeneratorProps, ParticleGenera
   render() {
     return (
       this.state.particles.map( (particle, i) => (
-        <Particle key={i} x={particle.x} y={particle.y} radius={particle.radius} fill={this.props.fill}/>
+        <Particle key={i}
+                  x={particle.x}
+                  y={particle.y}
+                  radius={particle.radius}
+                  fill={this.props.fill}/>
       ))
     )
   }

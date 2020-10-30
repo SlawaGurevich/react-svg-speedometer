@@ -27,8 +27,18 @@ $color__warn--dark: #ebc90c;
   }
 }
 
-#HalfRound {
+@keyframes over-speed-limit {
+  0% {
+    stroke-width: 20
+  }
 
+  50% {
+    stroke-width: 27
+  }
+
+  100% {
+    stroke-width: 20
+  }
 }
 
 .speedometer {
@@ -128,8 +138,14 @@ $color__warn--dark: #ebc90c;
   }
 
   #ring__current-speed {
-    transition: stroke-dashoffset 100ms linear, opacity 500ms ease-in-out, stroke 100ms ease-in, stroke-width 400ms cubic-bezier(.75,1.68,.82,1.72);
+    transition: stroke-dashoffset 100ms linear,
+                opacity 500ms ease-in-out;
     opacity: 0;
+
+    &.over-speed-limit {
+      animation: 250ms cubic-bezier(.72,.33,.24,1.59) 0s 1 over-speed-limit;
+      animation-fill-mode: forwards;
+    }
 
     &.is-active {
       opacity: 1;
@@ -175,16 +191,10 @@ $color__warn--dark: #ebc90c;
   }
 
   &-component {
-    background-color: #303136;
+    background-color: $color__background;
     color: white;
     width: 100%;
     height: 100%;
     min-height: 600px;
-    border: 1px solid white;
-
-    &.speedometer-component-light {
-        background-color: white;
-        color: black;
-    }
   }
 }

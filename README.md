@@ -8,7 +8,7 @@ The project is a Speed-O-Meter react component. It uses SVG graphics to render i
 
 ## What can you do?
 
-Use the **SPACE** button to accelerate, let it go to deccelerate. Use arrow keys **UP** and **DOWN** to switch between gears. Please note that you can not accelerate while in **P** mode.
+Use the **SPACE** button to accelerate, let it go to decelerate. Use arrow keys **UP** and **DOWN** to switch between gears. Please note that you can not accelerate while in **P** mode. If you do not want to hold **SPACE** you can briefly tap it to accelerate / decelerate.
 
 ## Installation
 
@@ -65,14 +65,17 @@ All options are optional and can be left out in favour of the default value.
 
 ## Particle Options
 
-The particle system works out of the box. However, you can specify more options like this.
+The particle system works out of the box. However, you can specify more options like this. Some options are deliberately not customizable to ensure the particles work properly.
 
 ```javascript
 <SpeedOMeter particleOptions={{
                               pps: 200,
                               radius: 3,
-                              radiusJitter: 1
-                             }} maxSpeed={100} speedLimit={65} />
+                              radiusJitter: 1,
+                              ...
+                             }}
+						 maxSpeed={100}
+						 speedLimit={65} />
 ```
 
 You can use the following options:
@@ -114,6 +117,7 @@ I would like to say a few words regarding the design and the UI/UX of the compon
 - Acceleration is not possible when in P gear. Thus the speed indicator is faded to gray to signalize this.
 - The speed limit indicator is visible on top of the speed ring, so that the user has an idea of how far over the speed limit he is driving.
 - To increase the visual impact when the speed goes further over the speed limit, the gradient is constantly turning increasingly red to indicate that the maximum speed has been reached
+- Particles are only produced when the user is holding the space key to simulate the grinding of metal while the car accelerates.
 - There are quite a few SVG hacks that were necessary to be able to implement the desing. Since SVG does not support gradients along a curved path, a lot of the colors are trick gradients.
 
 ## Future improvements

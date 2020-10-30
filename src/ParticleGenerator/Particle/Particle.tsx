@@ -2,6 +2,10 @@ import React, { Component } from 'react'
 
 import { ParticleProps, ParticleState } from './Particle.types'
 
+/**
+ * Simple Particle class to render an SVG circle as a particle.
+ * @class
+ */
 class Particle extends Component<ParticleProps, ParticleState> {
   state: ParticleState
 
@@ -18,10 +22,6 @@ class Particle extends Component<ParticleProps, ParticleState> {
       x: this.props.x,
       y: this.props.y
     }
-  }
-
-  componentDidMount() {
-
   }
 
   render() {

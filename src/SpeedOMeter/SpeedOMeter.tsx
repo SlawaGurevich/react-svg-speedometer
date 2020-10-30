@@ -7,7 +7,10 @@ import { SpeedOMeterProps, SpeedOMeterState } from "./SpeedOMeter.types";
 import ParticleGenerator from '../ParticleGenerator/ParticleGenerator'
 import "./SpeedOMeter.scss";
 
-// GearLabel component for rendering the gear switcher
+
+/**
+ * GearLabel component for rendering the gear switcher
+ */
 const GearLabel = ({options}) => {
   let optionParams = {
     pos: options.pos || {x: 0, y: 0},
@@ -31,14 +34,17 @@ const GearLabel = ({options}) => {
                 r={50}
                 cx={optionParams.pos.x}
                 cy={optionParams.pos.y}
-                fill="none"
+                fill="transparent"
                 stroke={optionParams.activeColor}></circle>
       </g>
     </g>
   )
 }
 
-// Component to render the particles attached to the tip of the gauge
+
+/**
+ * A functional component to render the particles at the tip of the speed indicator bar.
+ */
 const AttachedParticle = ({options}) => {
   let optionParams = {
     pos: options.pos || 300,
@@ -61,8 +67,22 @@ const AttachedParticle = ({options}) => {
   )
 }
 
+
+/**
+ * Main component. Responsible for drawing and functionality.
+ * @class
+ */
 class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   state: SpeedOMeterState
+
+  // Four color functions to make the default colors behave differently depending on the speed
+  colorHighlightDynamic = () => {
+    return Color(CONSTANTS.colorHighlight).darken(`${.3 * this.state.speed / this.props.maxSpeed}`)
+  }
+
+  colorHighlightBrightDynamic = () => {
+    return Color(CONSTANTS.colorHighlightBright).darken(`${.1 * this.state.speed / this.props.maxSpeed}`)
+  }
 
   colorWarnDynamic = () => {
     return Color(CONSTANTS.colorWarn).mix(Color("red"), (this.state.speed > this.props.speedLimit ? .8 * (this.state.speed - this.props.speedLimit) / (this.props.maxSpeed - this.props.speedLimit) : 0 ) )
@@ -70,14 +90,6 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   colorWarnBrightDynamic = () => {
     return Color(CONSTANTS.colorWarnBright).mix(Color("red"), (this.state.speed > this.props.speedLimit ? .8 * (this.state.speed - this.props.speedLimit) / (this.props.maxSpeed - this.props.speedLimit) : 0 ) )
-  }
-
-  colorHighlightDynamic = () => {
-    return Color(CONSTANTS.colorHighlight).darken(`${.3 * this.state.speed / this.props.maxSpeed}`)
-  }
-
-  colorHighlightBrightDynamic = () => {
-    return Color(CONSTANTS.colorHighlightBright).darken(`${.1 * this.state.speed / this.props.maxSpeed}`)
   }
 
   // Instance variables
@@ -101,9 +113,9 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     "R", "N", "D", "P", "B"
   ]
 
-
   constructor(props: SpeedOMeterProps) {
     super(props)
+    // Refs for elements that need to be transformed
     this.parentRef = React.createRef<SVGSVGElement>()
     this.backgroundRingPathRef = React.createRef<SVGPathElement>()
     this.speedIndicatorRingPathRef = React.createRef<SVGPathElement>()
@@ -111,6 +123,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
     this.handleKeypress = this.handleKeypress.bind(this)
 
+    // Start in N gear
     this.state = {
       width: 0,
       height: 0,
@@ -122,27 +135,45 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
   }
 
   componentDidMount() {
+    // helper variable
     this._isMounted = true
+
+    // If the SVG element is there and the component is mounted
     if (this.parentRef.current && this._isMounted) {
+      // Set the current width and height for the transformation later
       this.setState({
-        width: this.parentRef.current.clientWidth / 2,
-        height: this.parentRef.current.clientHeight / 2
+        width: this.parentRef.current.clientWidth,
+        height: this.parentRef.current.clientHeight
       })
     }
 
+    // Two event listener for the space bar acceleration as well as gear shift
     window.addEventListener("keydown", this.handleKeypress)
     window.addEventListener("keyup", this.handleKeypress)
 
+    // Helper function to fade in the gear labels sequentially
     this.fadeInGears()
   }
 
-  // Key handler
+
+  /**
+   * Key Handler function.
+   *
+   * Handles all the keypresses in the application.
+   *
+   * @param {Event}   evt   Event provided by the evet listener.
+   */
   handleKeypress(evt) {
+    // Check if space key is pressed
     if (evt.key == " " && this._isMounted) {
       evt.preventDefault()
 
+      // If the space key was pressed and it was not pressed before and we are not in P gear
       if (evt.type == "keydown" && !this.state.spacePressed && this.state.selectedGear !== "P") {
+        // Clear the interval, if there has been one before
         clearInterval(this.state.interval)
+
+        // Create an interval to increase the speed
         this.setState({
           interval: window.setInterval(() => {
             this.setState({
@@ -151,8 +182,12 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             })
           }, 100)
         })
+        // If the space key is let go and it was pressed before and there is an interval already defined
       } else if (evt.type == "keyup" && this.state.spacePressed && this.state.interval) {
+        // Clear the interval
         clearInterval(this.state.interval)
+
+        // And set an interval to decrease the speed that turns itself off, when the speed reaches zero
         this.setState(
           {
             spacePressed: false,
@@ -172,8 +207,11 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           }
         )
       }
+    // If the pressed key is the ArrowUp or ArrowDown key, shift gears
     } else if (evt.key == "ArrowUp" && evt.type == "keydown") {
       evt.preventDefault()
+
+      // Prevent from shifting too far up ...
       if( this.gears.indexOf(this.state.selectedGear) > 0) {
         this.setState({
           selectedGear: this.gears[this.gears.indexOf(this.state.selectedGear) - 1]
@@ -181,6 +219,8 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
       }
     }  else if (evt.key == "ArrowDown" && evt.type == "keydown") {
       evt.preventDefault()
+
+      // ...or down.
       if( this.gears.indexOf(this.state.selectedGear) != (this.gears.length - 1) ) {
         this.setState({
           selectedGear:  this.gears[this.gears.indexOf(this.state.selectedGear) + 1]
@@ -189,7 +229,13 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
   }
 
-  // Animation related functions
+
+  /**
+   * Fades in the gears.
+   *
+   * Done with a fuction because of the sequential animation.
+   *
+   */
   fadeInGears() {
     let gears = document.querySelectorAll(".speedometer__gear")
 
@@ -198,33 +244,76 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
   }
 
-  // Check whether the current speed is over the speed limit
+
+  /**
+   * Gets a range object to render elements on the circle.
+   *
+   * This function is useful for getting coordinates for an object to render _around_ the ring in relation to the current speed.
+   *
+   * @param {number}   width        The width of the element that should be rendered. Will be centered around the ring.
+   * @param {number}   fixedValue   A fixed value for the position, that doesn't change (or a custom value in general). Useful for elements that don't move.
+   *
+   * @return {boolean} Returns true if over speed limit.
+   */
   overSpeedLimit() {
     return (this.state.speed > this.props.speedLimit)
   }
 
-  dangerZone() {
-    return (this.state.speed > (this.props.speedLimit + (this.props.maxSpeed - this.props.speedLimit) / 1.5 ) )
-  }
 
-  // Get total length of a path
+  /**
+   * Gets the total length of a path.
+   *
+   * Path must be provided as a ref.
+   *
+   * @param {React.Ref}   ref        A ref to the path to get the length of.
+   *
+   * @return {number} The total path length.
+   */
   getTotalRingLength(ref) {
     if(ref.current){
       return ref.current.getTotalLength()
     }
   }
 
-  // Return the current offset for rendering the active speed ring
+
+  /**
+   * Returns the current offset for rendering the active speed ring
+   *
+   * @param {React.Ref}   ref        A ref to the path to get the length of.
+   *
+   * @return {number} The current offset for the rendered path.
+   */
   getStrokeDashOffset(ref) {
     return this.getTotalRingLength(ref) - (this.getTotalRingLength(ref) * this.state.speed / this.props.maxSpeed)
   }
 
-  // Get the offset for the shine path
+
+  /**
+   * Get the offset for the shine with an offset of 300 to incorporate the length of the shine
+   *
+   * Used to get the correct position of the shine.
+   *
+   * @param {React.Ref}   width        The width of the element that should be rendered. Will be centered around the ring.
+   *
+   * @return {number} The offset for the shine ring.
+   */
   getStrokeDashOffsetShine(ref) {
-    return this.mapRange([0, this.getTotalRingLength(ref)], [300, -this.getTotalRingLength(ref) + 300], this.getTotalRingLength(ref) * this.state.speed / this.props.maxSpeed)
+    return this.mapRange([0, this.getTotalRingLength(ref)],
+                         [300, -this.getTotalRingLength(ref) + 300],
+                         this.getTotalRingLength(ref) * this.state.speed / this.props.maxSpeed)
   }
 
-  // Get position array for rendering things on the circle
+
+  /**
+   * Gets a range object to render elements on the circle.
+   *
+   * This function is useful for getting coordinates for an object to render _around_ the ring in relation to the current speed.
+   *
+   * @param {number}   width        The width of the element that should be rendered. Will be centered around the ring.
+   * @param {number}   fixedValue   A fixed value for the position, that doesn't change (or a custom value in general). Useful for elements that don't move.
+   *
+   * @return {Object} An object containing the coordinates.
+   */
   getPositionOnCircleFromTo(width = 20, fixedValue = this.state.speed / this.props.maxSpeed) {
     let from = {
       x: (this.props.radius - width / 2) * -Math.sin( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI ),
@@ -236,13 +325,23 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
       y: (this.props.radius + width / 2) * Math.cos( this.mapRange([0, 1], [.14, .86], fixedValue) * 2 * Math.PI )
     }
 
-
     return {
       from: from, to: to
     }
   }
 
-  // Gets a single point from the circle path
+
+/**
+ * Gets a single point object to render on the circle.
+ *
+ * This function is useful for getting coordinates for an object to render _on_ the ring in relation to the current speed.
+ *
+ * @param {number}   radius       Radius of the ring to get the position for. Uses the current radius by default
+ * @param {number}   fixedValue   A fixed value for the position, that doesn't change (or a custom value in general). Useful for elements that don't move.
+ * @param {number}   offset       Offsets the position on the path. Useful for moving objects slightly closer or farther away from the current position.
+ *
+ * @return {Object} An object containing the coordinates.
+ */
   getPositionOnCircleSinglePoint(radius = this.props.radius, fixedValue = null, offset = 0) {
     return {
       x: radius * -Math.sin( this.mapRange([0, 1], [.14, .86], (fixedValue != null ? fixedValue : this.state.speed / this.props.maxSpeed) + offset) * 2 * Math.PI ),
@@ -250,38 +349,33 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
     }
   }
 
-  /**
- * Calculates the position of the speed limit indicator. The 12pt widht is to insure it lays over the 10pt width of the background ring.
+
+/**
+ * Maps a range of values to another range.
+ *
+ * Used for mapping a value from one range to another.
+ *
+ * @param {[number]}   from      The original range.
+ * @param {[number]}   to        The new range.
+ * @param {number}     val       The value to map.
+ *
+ * @return {number} The mapped number.
  */
-  getSpeedLimitPos() {
-    let from = {
-      x: (this.props.radius - 11) * -Math.sin(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
-      y: (this.props.radius - 11) * Math.cos(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
-    }
-
-    let to = {
-      x: (this.props.radius + 10) * -Math.sin(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI),
-      y: (this.props.radius + 10) * Math.cos(this.mapRange([0, 1], [.14, .86], this.props.speedLimit / this.props.maxSpeed) * 2 * Math.PI)
-    }
-
-    return {
-      from: from,
-      to: to
-    }
+  mapRange (from, to, val) {
+    return to[0] + (val - from[0]) * (to[1] - to[0]) / (from[1] - from[0]);
   }
 
-  // helper functions
 
-  /**
-  * Map a value to from one range to another.
-  */
-  mapRange (from, to, s) {
-    return to[0] + (s - from[0]) * (to[1] - to[0]) / (from[1] - from[0]);
-  }
-
-  /**
-  * Get position of the gear labels.
-  */
+/**
+ * Gets the position of the gear labels.
+ *
+ * A helper function to position the gear labels correctly.
+ *
+ * @param {number}   radus      The radius to position around.
+ * @param {number}   mod        A mdifier to move the labels along the radius.
+ *
+ * @return {Object} An object with the position coordinates.
+ */
   getGearLabelPosition(radius, mod) {
     let x = -radius * this.mapRange([-1, 1], [-0.8, 0.8], Math.cos(mod * 2 * Math.PI) )
     let y = radius * this.mapRange([-1, 1], [-0.8, 0.8], Math.sin(mod * 2 * Math.PI) )
@@ -294,14 +388,13 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
   render() {
     return (
-      <div
-      data-testid="speedometer-component"
-      className="speedometer-component speedometer" >
+      <div data-testid="speedometer-component"
+           className="speedometer-component speedometer" >
       <svg className="speedometer__canvas"
-        width="100%"
-        height="100%"
-        viewBox="0 0 1000 850"
-        ref={this.parentRef} >
+           viewBox="0 0 1000 850"
+           width="100%"
+           height="100%"
+           ref={this.parentRef} >
 
         <defs>
           {/* Gradient definitions */}
@@ -346,11 +439,11 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           <filter id="particle-glow">
           <feDropShadow dx="0"
-                          dy="0"
-                          in="SourceGraphic"
-                          stdDeviation="20"
-                          floodColor={ "black" }
-                          floodOpacity="1"></feDropShadow>
+                        dy="0"
+                        in="SourceGraphic"
+                        stdDeviation="20"
+                        floodColor={ "black" }
+                        floodOpacity="1"></feDropShadow>
           </filter>
 
           <filter id="ring-glow">
@@ -389,7 +482,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
             <path d="M 0 0 L 0 10 A 8 8 1 1 1 0 0 z" />
           </marker>
         </defs>
-        <g width="100%" transform={`translate(${this.state.width}, ${this.state.height})`}>
+        <g width="100%" transform={`translate(${this.state.width / 2}, ${this.state.height / 2})`}>
 
           {/* Path for the inner shine of the circle */}
           <path id="ring__current-speed-inner-shine"
@@ -430,7 +523,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           {/* Path for the speed limit indicator. The main ring, so to say. */}
           <path id="ring__current-speed"
-                className={this.state.speed > 0 ? "is-active" : undefined}
+                className={`${this.state.speed > 0 ? "is-active" : undefined} ${this.overSpeedLimit() ? "over-speed-limit" : undefined}`}
                 d="M -230 200
                    A 300 300 0 1 1 230 200"
                 markerStart="url(#HalfRound)"
@@ -446,7 +539,12 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           {/* Path for the highlight of the underlying glow. */}
           <path id="ring__current-speed-highlight"
                 className={this.state.speed > 5 ? "is-active" : undefined}
-                width="100" height="100" d={`M${this.getPositionOnCircleFromTo().from.x} ${this.getPositionOnCircleFromTo().from.y} L${this.getPositionOnCircleFromTo().to.x} ${this.getPositionOnCircleFromTo().to.y}`}
+                d={`M${this.getPositionOnCircleFromTo().from.x}
+                    ${this.getPositionOnCircleFromTo().from.y}
+                    L${this.getPositionOnCircleFromTo().to.x}
+                    ${this.getPositionOnCircleFromTo().to.y}`}
+                width="100"
+                height="100"
                 strokeWidth={5}
                 transform="translate(0, 7)"
                 filter="url(#end-blur)"
@@ -470,11 +568,15 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
 
           {/* Path for the speed limit indicator. Another transparent instance to lay over the speed indicator ring for better usability. */}
           <path className="speedometer__speed-limit-indicator transparent"
-                d={`M ${this.getSpeedLimitPos().from.x} ${this.getSpeedLimitPos().from .y} L ${this.getSpeedLimitPos().to.x} ${this.getSpeedLimitPos().to.y}`}
+                d={`M ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).from.x}
+                ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).from .y}
+                L ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).to.x}
+                ${this.getPositionOnCircleFromTo(22, this.props.speedLimit / this.props.maxSpeed).to.y}`}
                 transform="translate(0, 7)"
                 strokeWidth="10">
           </path>
 
+          {/* Gear labels for the 5 gears. */}
           <GearLabel options={{
             active: this.state.selectedGear == "R",
             activeColor: CONSTANTS.colorReverseOrange,
@@ -513,9 +615,11 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
           }} />
         </g>
 
+        {/* Effects */}
         <g id="ring__current-speed--effect"
-           transform={`translate(${this.state.width}, ${this.state.height + 7})`}
+           transform={`translate(${this.state.width / 2}, ${this.state.height / 2 + 7})`}
            filter="url(#particles)">
+             {/* Attached particles that appear on the tip of the speed ring. */}
              <g className={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed ? "visible" : undefined }>
               <AttachedParticle options={{
                 pos: this.getPositionOnCircleSinglePoint(293, null, .002),
@@ -562,7 +666,9 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
                 animationDuration: 500
               }} />
             </g>
-            <ParticleGenerator active={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed }
+
+            {/* Particle generator */}
+            <ParticleGenerator active={ this.overSpeedLimit() && this.state.speed !== this.props.maxSpeed && this.state.spacePressed }
                                x={this.getPositionOnCircleSinglePoint(300).x}
                                y={this.getPositionOnCircleSinglePoint(300).y}
                                fill={this.colorWarnBrightDynamic()}
