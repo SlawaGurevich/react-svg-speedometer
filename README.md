@@ -28,6 +28,7 @@ Build the project, if not done so, yet.
 
 ```bash
 $ cd react-svg-speedometer
+$ npm install
 $ npm run build
 ```
 
