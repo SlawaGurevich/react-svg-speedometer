@@ -1,6 +1,6 @@
 {
   "name": "react-svg-speedometer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A svg speedometer component for react.",
   "main": "build/index.js",
   "module": "build/index.es.js",
