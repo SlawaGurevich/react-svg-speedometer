@@ -124,6 +124,7 @@ I would like to say a few words regarding the design and the UI/UX of the compon
 ## Future improvements
 
 - Prevent users to switch into **R** gear when the speed is not 0.
+- Add unit testing for all the component (preferably 100% coverage)
 - Export more components (like the gauge, the particles and so on...) as their own components.
 - Create an option for KMH / MPH
 - More svg properties could be moved over to the scss file for better readability
