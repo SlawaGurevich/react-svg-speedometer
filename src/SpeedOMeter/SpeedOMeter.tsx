@@ -676,6 +676,7 @@ class SpeedOMeter extends Component<SpeedOMeterProps, SpeedOMeterState> {
         </g>
         <g className={`selected__gear--${this.state.selectedGear}`}>
           <text id="speedometer__current-speed"
+                data-testid="speedometer__current-speed"
                 className="speedometer__current-speed"
                 x="50%"
                 y="50%"

@@ -1,33 +1,37 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import renderer from 'react-test-renderer';
+import { render, unmountComponentAtNode } from "react-dom";
+import { act } from "react-dom/test-utils";
 
 import SpeedOMeter from "./SpeedOMeter";
 import { SpeedOMeterProps } from "./SpeedOMeter.types";
 
+let props: SpeedOMeterProps;
+let container = null;
+
+beforeEach(() => {
+  // build up
+  props = {
+    startFromSpeed: 20,
+    speedLimit: 65,
+    maxSpeed: 100
+  };
+  container = document.createElement("div");
+  document.body.appendChild(container);
+});
+
+afterEach(() => {
+  // cleanup on exit
+  unmountComponentAtNode(container);
+  container.remove();
+  container = null;
+});
+
 describe("SpeedOMeter Component", () => {
-  let props: SpeedOMeterProps;
 
-  beforeEach(() => {
-    props = {
-      startFromSpeed: 65
-    };
-  });
-
-  const renderComponent = () => render(<SpeedOMeter {...props} />);
-
-  it("Start speed should be reflected in component.", () => {
-    const { getByTestId } = renderComponent();
-
-    const speedLabel = getByTestId("speedometer__current-speed");
-
-    expect(speedLabel.innerText).toBe(props.startFromSpeed)
-  });
-
-  it("should have secondary className with theme set as secondary", () => {
-    const { getByTestId } = renderComponent();
-
-    const speedOMeterComponent = getByTestId("speedometer-component");
-
-    expect(speedOMeterComponent).toHaveClass("speedometer-component-light");
+  test('snapshot test', () => {
+    const component = renderer.create(<SpeedOMeter />);
+    let tree = component.toJSON();
+    expect(tree).toMatchSnapshot();
   });
 });

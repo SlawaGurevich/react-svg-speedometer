@@ -3,8 +3,10 @@ module.exports = {
   setupFilesAfterEnv: ["./jest.setup.ts"],
   moduleFileExtensions: ["ts", "tsx", "js"],
   testPathIgnorePatterns: ["node_modules/"],
+  preset: 'ts-jest',
   transform: {
-    "^.+\\.tsx?$": "ts-jest"
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    "^.+\\.(js|jsx)$": "babel-jest",
   },
   testMatch: ["**/*.test.(ts|tsx)"],
   moduleNameMapper: {
